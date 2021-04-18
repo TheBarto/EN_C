@@ -77,7 +77,7 @@ void liberar_elems_struct_configuracion(struct Cofiguracion* config);
 /*
 	La estructura captura hace referencia a una captura completa. A UNA secuencia de odorantes,
 	que tiene el mismo tiempo de analisis para cada odorante, una lista de odorantes (aire, etanol, metanol, ...),
-	una succion para el motor, etc.
+	una succion para el motor, un tiempo para los odorantes, ...
 */
 struct Captura
 {
@@ -104,7 +104,7 @@ void liberar_structs_capturas(struct Captura* capturas, uint16_t* totalMuestras)
 
 /*
 	La estructura Puro hace referencia al total de las multiples secuencias de captura con esta modulacion. 
-	Cada una de las secuencias se lleva a cabo con una struct captura. La idea es programar varias secuencias
+	Cada una de las secuencias se lleva a cabo con una struct captura (UN FICHERO). La idea es programar varias secuencias
 	en diferentes capturas y analizarlas despues. Las capturas se diferencian por las comas(,) de separacion
 */
 

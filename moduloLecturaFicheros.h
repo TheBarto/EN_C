@@ -1,7 +1,11 @@
-#ifndef MODULACION_COMUN_H
-#define MODULACION_COMUN_H
+#ifndef MODULOLECTURAFICHEROS_H
+#define MODULOLECTURAFICHEROS_H
 
-void lecturaFichero(const char* nombre);
+char cabeceraLinea[] = {"EN_CAPTURE"};
+
+
+
+void* aperturaFichero(const char* nombre);
 
 void procesarContenidoFichero(char* contenido);
 
