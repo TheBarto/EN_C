@@ -159,6 +159,30 @@ struct Puro* inicializar_struct_Puro(uint16_t resistencia, char* path, struct Co
 	return puro;
 }
 
+struct Puro* inicializar_struct_Puro_struct(uint16_t resistencia, char* path, struct Cofiguracion* configuracion,
+	uint16_t* totalMuestras, funcion_captura func, struct Captura* captura)
+{
+	struct Puro* puro = (struct Puro *)calloc(1, sizeof(struct Puro));
+
+	RESISTENCIA(puro) = resistencia;
+
+	uint8_t* pPuroPath = PATH(puro);
+	while(*path != 0)
+	{
+		*pPuroPath++ = *path++;
+	}
+
+	SCONFIGURACION(puro) = configuracion;
+	TOTALCAPTURAS(puro) = *totalMuestras;
+
+	puro->funcion
+	FILE(puro) = NULL;
+	FUNCIONCAPTURA(puro) = func;
+	SCAPTURAS(puro) = captura;
+
+	return puro;
+}
+
 void liberar_struct_Puro(struct Puro* puro)
 {
 	liberar_structs_capturas(SCAPTURAS(puro), &TOTALCAPTURAS(puro));

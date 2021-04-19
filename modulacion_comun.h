@@ -86,6 +86,8 @@ struct Captura
 	uint16_t tiempoAnalisisOdor;
 	uint8_t totalValvulas;
 	uint8_t* ordenValvulas;
+	uint8_t path[500];
+	uint8_t fileRoot[500]; 
 };
 
 #define SUCCION(x) (x->succion)
@@ -93,6 +95,8 @@ struct Captura
 #define TIEMPOANALISISODOR(x) (x->tiempoAnalisisOdor)
 #define TOTALVALVULAS(x) (x->totalValvulas)
 #define ORDENVALVULAS(x) (x->ordenValvulas)
+#define PATH(x) (x->path)
+#define FILEROOT(x) (x->fileRoot)
 
 #define TOTALVALVULAS2(x) (x.totalValvulas)
 
@@ -113,7 +117,6 @@ typedef void (*funcion_captura)(void*);
 struct Puro{
 	struct Cofiguracion* configuracion;
 	uint16_t resistencia;
-	uint8_t path[500];
 	uint16_t pTotalCapturas;
 	struct Captura* capturas;
 	FILE* f;
@@ -126,12 +129,15 @@ struct Puro{
 #define SCAPTURAS(x) (x->capturas)
 #define SCAPTURASPOSI(x, i) (x->capturas[i])
 #define FILE(x) (x->f)
-#define FUNCIONCAPTURA(x, y) (x->funcion(y))
+#define FUNCIONCAPTURA(x) (x->funcion)
 #define TOTALCAPTURAS(x) (x->pTotalCapturas)
 
 struct Puro* inicializar_struct_Puro(uint16_t resistencia, char* path, struct Cofiguracion* configuracion,
 	uint16_t* totalMuestras, uint8_t* suctions, uint8_t* temperaturasSensor, 
 	int16_t* tiemposAnalisisOdor, uint8_t** ordenValvulas, funcion_captura func);
+
+struct Puro* inicializar_struct_Puro_struct(uint16_t resistencia, char* path, struct Cofiguracion* configuracion,
+	uint16_t* totalMuestras, funcion_captura func, struct Captura* captura);
 
 void captura_secuencia_odorantes_completa_puro(struct Captura* captura, struct Cofiguracion* config, uint16_t resistencia);
 void captura_secuencias_completas_puro(void* stru);
