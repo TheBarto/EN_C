@@ -88,6 +88,8 @@ struct Captura
 	uint8_t* ordenValvulas;
 	uint8_t path[500];
 	uint8_t fileRoot[500]; 
+	uint8_t totalValoresCapturaExtraAniadidos;
+	uint16_t valoresCapturaExtra[20];
 };
 
 #define SUCCION(x) (x->succion)

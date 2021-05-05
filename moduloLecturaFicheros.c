@@ -22,7 +22,7 @@ void aperturaFichero(const char* nombre, FILE* file)
 
 /*Para obtener una secuencia, solamente tiene que leer una linea. Luego se captura y
  se lee otra linea para otra secuencia */
-void obtenerSecuenciaCapturaDelFichero(FILE* file, uint8_t* modulacion)
+void obtenerSecuenciaCapturaDelFichero(FILE* file, uint8_t* modulacion, struct Captura* captura)
 {
 
 	if(!file)
@@ -31,11 +31,11 @@ void obtenerSecuenciaCapturaDelFichero(FILE* file, uint8_t* modulacion)
 		return;
 	}
 
-	struct Captura* captura = (struct Captura *)calloc(sizeof(*captura));
-
 	uint16_t posCab = 0;
 	uint8_t byte = 0;
 	uint8_t lineaEncontrada = 0;
+	uint8_t posicionLinea = 0;
+	Stack* stack = createStack();
 
 	uint8_t leido = fread(&byte, 1, 1, file);
 	while((leido == 1) && (byte != 0))
@@ -52,32 +52,56 @@ void obtenerSecuenciaCapturaDelFichero(FILE* file, uint8_t* modulacion)
 		{
 			switch(byte)
 			{
-				case ',':
+				case VALOR_COMA:
 				{
-					if((llave == 0) && (parentesis == 0))
+					if(posicionLinea == POSICION_ORDEN_VALVULAS)
 					{
+						if(llave == 1)
+						{
+							llave = 0;
+							procesarGrupoPila(stack, valor);
+						}
+						else
+						{
+							return E_MAL_FORMADO;
+						}
+						//Falta obtener una lista con los elementos
+						procesarInformacion(valor, posicionLinea, captura);
+						//Obtenemos el total de elementos
 						procesarInformacion(valor, posicionLinea, captura);
 					}
-					else if(llave == 0)
-					{
-						añadirValorGrupo(valor);
-					}
 					else
-					{
-						return E_MAL_FORMADO;
+					{					
+						if((llave == 0) && (parentesis == 0))
+						{
+							procesarInformacion(valor, posicionLinea, captura);
+						}
+						else
+						{
+							return E_MAL_FORMADO;
+						}
 					}
 					posicionLinea++;
 					valor = 0;
 					break;
 				}
-				case ')':
+				case VALOR_CIERRE_PARENTESIS:
 				{
-					if(posicionLinea == 3)
+					if(posicionLinea == POSICION_ORDEN_VALVULAS)
 					{
 						parentesis--;
-						if(parentesis == 0)
+						if(parentesis < 0)
 							return E_MAL_FORMADO;
-						repetirUltimoConjunto(valor);
+
+						if(cierreLlaveCercano == VALOR_RESET_LLAVE_CERRADA)
+						{
+							procesarUltimoElementoPila(stack, valor);
+						}
+						else
+						{
+							procesarGrupoPila(stack, valor);
+							cierreLlaveCercano = VALOR_RESET_LLAVE_CERRADA;
+						}
 					}
 					else
 					{
@@ -85,10 +109,10 @@ void obtenerSecuenciaCapturaDelFichero(FILE* file, uint8_t* modulacion)
 					}
 					break;
 				}
-				case '(':
+				case VALOR_APERTURA_PARENTESIS:
 				{
-					if(posicionLinea == 3)
-					{					
+					if(posicionLinea == POSICION_ORDEN_VALVULAS)
+					{	
 						parentesis++;
 					}
 					else
@@ -98,53 +122,74 @@ void obtenerSecuenciaCapturaDelFichero(FILE* file, uint8_t* modulacion)
 					break;
 				}
 				//Salto de linea
-				case 10:
+				case VALOR_SALTO_LINEA:
 				{
 					lineaEncontrada = 0;
 					posCab = 0;
 					parentesis = 0;
 					llave = 0;
-					pos_nombre=0;
+					pos_nombre = 0;
 					posicionLinea = 0;
 					valor = 0;
 					break;
 				}
-				case '{':
+				case VALOR_APERTURA_LLAVE:
 				{
-					if(posicionLinea == 3)
+					if(posicionLinea == POSICION_ORDEN_VALVULAS)
+					{
 						llave++;
+						guardarValorPila(IDENTIFICADOR_APERTURA_LLAVE);
+						guardarValorPila(valor);
+					}
 					else
 						return E_MAL_FORMADO;
 					break;
 				}
-				case '}':
+				case VALOR_CIERRE_LLAVE:
 				{
-					if(posicionLinea == 3)
+					if(posicionLinea == POSICION_ORDEN_VALVULAS)
 					{
 						llave--;
-						if(parentesis == 0)
+						if(parentesis < 0)
 							return E_MAL_FORMADO;
+
+						if(cierreLlaveCercano == VALOR_LLAVE_CERRADA)
+						{
+							procesarGrupoPila(stack, valor);
+						}
+
+						cierreLlaveCercano = VALOR_LLAVE_CERRADA;
 					}
 					else
 					{
 						return E_MAL_FORMADO;
 					}
+					break;
+				}
+				case SEPARADOR_VALVULAS:
+				{
+					if(cierreLlaveCercano == VALOR_LLAVE_CERRADA)
+					{
+						procesarGrupoPila(stack, valor);
+						cierreLlaveCercano = VALOR_RESET_LLAVE_CERRADA;
+					}
+					
 					break;
 				}
 				default:
 				{
-					if((posicionLinea == 5) || 
-						(posicionLinea == 6))
+					if((posicionLinea == POSICION_RAIZ_NOMBRE_FICHERO) || 
+						(posicionLinea == POSICION_NOMBRE_CARPETA))
 					{
 						nombre[pos_nombre] = byte;
 						pos_nombre++;
 					}
 					else
 					{
-						if((byte >= '0') || 
-							(byte <= '9'))
+						if((byte >= VALOR_NUMERO_0) || 
+							(byte <= VALOR_NUMERO_9))
 						{
-							byte-='0';
+							byte-=VALOR_NUMERO_0;
 							valor*=10;
 							valor+=byte;
 						}
@@ -167,6 +212,7 @@ void obtenerSecuenciaCapturaDelFichero(FILE* file, uint8_t* modulacion)
 		captura = NULL;
 	}
 
+	//Liberar la pila-FALTA
 	return captura;
 }
 
@@ -179,7 +225,7 @@ void procesarInformacion(uint32_t valor, uint8_t posicionLinea, struct Captura* 
 
 	switch(posicionLinea)
 	{
-		case 0:
+		case POSICION_MODULACION:
 		{
 			if((valor < 0) || (valor > 3))
 			{
@@ -191,28 +237,30 @@ void procesarInformacion(uint32_t valor, uint8_t posicionLinea, struct Captura* 
 			}
 			break;
 		}
-		case 1:
+		case POSICION_SUCCION:
 		{
 			SUCCION(captura) = valor;
 			break;
 		}
-		case 2:
+		case POSICION_DURACION_ODORANTE:
 		{
 			TIEMPOANALISISODOR(captura) = valor;
 			break;
 		}
-		case 3:
+		case POSICION_ORDEN_VALVULAS:
 		{
-			ORDENVALVULAS(captura) = valor;
-			TOTALVALVULAS(captura) = valor;
+			if(!ORDENVALVULAS(captura))
+				ORDENVALVULAS(captura) = valor;
+			else
+				TOTALVALVULAS(captura) = valor;
 			break;
 		}				
-		case 4:
+		case POSICION_TEMPERATURA_SENSOR:
 		{
 			TEMPERATURASENSOR(captura) = valor;
 			break;
 		}
-		case 5:
+		case POSICION_RAIZ_NOMBRE_FICHERO:
 		{
 			//raiz nombre comun para ficheros
 			uint8_t* raizNombre = FILEROOT(captura);
@@ -220,7 +268,7 @@ void procesarInformacion(uint32_t valor, uint8_t posicionLinea, struct Captura* 
 				*raizNombre++ = *path++;			
 			break;
 		}
-		case 6:
+		case POSICION_NOMBRE_CARPETA:
 		{
 			//nombre carpeta donde guardar los ficheros
 			uint8_t* carpeta = PATH(captura);
@@ -230,7 +278,49 @@ void procesarInformacion(uint32_t valor, uint8_t posicionLinea, struct Captura* 
 		}
 		default:
 		{
-			return ERROR;
+			if(TOTALVALORESEXTRA(captura) < 20)
+			{
+				GUARDARVALORESEXTRA(captura, valor);
+			}
+			else
+			{
+				return ERROR;
+			}
 		}
 	}
+}
+
+void procesarUltimoElementoPila(Stack* stack, uint32_t valor)
+{
+	uint32_t valorPop = *(uint32_t *)pop(stack);
+
+	for(uint32_t i = 0; i < valor; i++)
+	{
+		pushDeepCopy(stack, &valorPop, deepCopyInt32Value);
+	}
+
+	return;
+}
+
+void procesarGrupoPila(Stack* stack, uint32_t valor)
+{
+
+	uint32_t valorPop = *(uint32_t *)pop(stack);
+	Queue* queue = createQueue();
+
+	while(valorPop != IDENTIFICADOR_APERTURA_LLAVE)
+	{
+		insertDeepCopy(queue, &valorPop, deepCopyInt32Value);
+		valorPop = *(uint32_t *)pop(stack);
+	}
+
+	for(uint32_t i = 0; i < valor; i++)
+	{
+		valorPop = *(uint32_t *)extract(queue);
+		pushDeepCopy(stack, &valorPop, deepCopyInt32Value);
+		insertDeepCopy(queue, &valorPop, deepCopyInt32Value);
+	}
+
+	//Liberar la cola-FALTA
+	return;
 }
