@@ -65,16 +65,18 @@ void obtenerSecuenciaCapturaDelFichero(FILE* file, uint8_t* modulacion, struct C
 						{
 							return E_MAL_FORMADO;
 						}
-						//Falta obtener una lista con los elementos
-						procesarInformacion(valor, posicionLinea, captura);
-						//Obtenemos el total de elementos
-						procesarInformacion(valor, posicionLinea, captura);
+
+						uint32_t* dataArray = NULL;
+
+						uint32_t totalStackValues = getUInt32ArrayWithStackElements(stack, dataArray);
+						procesarInformacion(dataArray, posicionLinea, captura);
+						procesarInformacion(&totalStackValues, posicionLinea, captura);
 					}
 					else
 					{					
 						if((llave == 0) && (parentesis == 0))
 						{
-							procesarInformacion(valor, posicionLinea, captura);
+							procesarInformacion(&valor, posicionLinea, captura);
 						}
 						else
 						{
@@ -212,11 +214,11 @@ void obtenerSecuenciaCapturaDelFichero(FILE* file, uint8_t* modulacion, struct C
 		captura = NULL;
 	}
 
-	//Liberar la pila-FALTA
+	deleteDeepCopyStack(stack);
 	return captura;
 }
 
-void procesarInformacion(uint32_t valor, uint8_t posicionLinea, struct Captura* captura)
+void procesarInformacion(uint32_t* valor, uint8_t posicionLinea, struct Captura* captura)
 {
 	if(!captura)
 	{
@@ -227,7 +229,7 @@ void procesarInformacion(uint32_t valor, uint8_t posicionLinea, struct Captura* 
 	{
 		case POSICION_MODULACION:
 		{
-			if((valor < 0) || (valor > 3))
+			if((*valor < 0) || (*valor > 3))
 			{
 				return E_VALORES_INCORRECTOS;
 			}
@@ -239,25 +241,25 @@ void procesarInformacion(uint32_t valor, uint8_t posicionLinea, struct Captura* 
 		}
 		case POSICION_SUCCION:
 		{
-			SUCCION(captura) = valor;
+			SUCCION(captura) = *valor;
 			break;
 		}
 		case POSICION_DURACION_ODORANTE:
 		{
-			TIEMPOANALISISODOR(captura) = valor;
+			TIEMPOANALISISODOR(captura) = *valor;
 			break;
 		}
 		case POSICION_ORDEN_VALVULAS:
 		{
 			if(!ORDENVALVULAS(captura))
-				ORDENVALVULAS(captura) = valor;
+				ORDENVALVULAS(captura) = *valor;
 			else
-				TOTALVALVULAS(captura) = valor;
+				TOTALVALVULAS(captura) = *valor;
 			break;
 		}				
 		case POSICION_TEMPERATURA_SENSOR:
 		{
-			TEMPERATURASENSOR(captura) = valor;
+			TEMPERATURASENSOR(captura) = *valor;
 			break;
 		}
 		case POSICION_RAIZ_NOMBRE_FICHERO:
@@ -280,7 +282,7 @@ void procesarInformacion(uint32_t valor, uint8_t posicionLinea, struct Captura* 
 		{
 			if(TOTALVALORESEXTRA(captura) < 20)
 			{
-				GUARDARVALORESEXTRA(captura, valor);
+				GUARDARVALORESEXTRA(captura, *valor);
 			}
 			else
 			{
@@ -321,6 +323,6 @@ void procesarGrupoPila(Stack* stack, uint32_t valor)
 		insertDeepCopy(queue, &valorPop, deepCopyInt32Value);
 	}
 
-	//Liberar la cola-FALTA
+	deleteDeepCopyQueue(queue);
 	return;
 }
