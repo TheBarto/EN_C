@@ -1,6 +1,10 @@
 #ifndef MODULOLECTURAFICHEROS_H
 #define MODULOLECTURAFICHEROS_H
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdint.h>
+
 #define VALOR_COMA ((uint8_t) 44) //','
 #define VALOR_CIERRE_PARENTESIS ((uint8_t) 41) //')'
 #define VALOR_APERTURA_PARENTESIS ((uint8_t) 40) //'('
@@ -23,7 +27,7 @@
 #define VALOR_LLAVE_CERRADA	((uint8_t) 0xAA)
 #define VALOR_RESET_LLAVE_CERRADA	((uint8_t) 0x55)
 
-char cabeceraLinea[] = {"EN_CAPTURE"};
+char cabeceraLinea[] = {"EN_CAPTURE:"};
 
 
 

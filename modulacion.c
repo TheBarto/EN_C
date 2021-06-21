@@ -130,6 +130,7 @@ void liberar_structs_capturas(struct Captura* capturas, uint16_t* totalMuestras)
 	return;
 }
 
+/* Cambiar el char* por un char**, ya que ahora cada uno tiene su propia carpeta y nombre*/
 struct Puro* inicializar_struct_Puro(uint16_t resistencia, char* path, struct Cofiguracion* configuracion,
 	uint16_t* totalMuestras, uint8_t* suctions, uint8_t* temperaturasSensor, 
 	int16_t* tiemposAnalisisOdor, uint8_t** ordenValvulas, funcion_captura func)
@@ -142,11 +143,11 @@ struct Puro* inicializar_struct_Puro(uint16_t resistencia, char* path, struct Co
 
 	puro->resistencia = resistencia;
 
-	uint8_t* pPuroPath = &puro->path[0];
+	/*uint8_t* pPuroPath = &puro->path[0];
 	while(*path != 0)
 	{
 		*pPuroPath++ = *path++;
-	}
+	}*/
 
 	puro->pTotalCapturas = *totalMuestras;
 	puro->configuracion = configuracion;
@@ -166,16 +167,16 @@ struct Puro* inicializar_struct_Puro_struct(uint16_t resistencia, char* path, st
 
 	RESISTENCIA(puro) = resistencia;
 
-	uint8_t* pPuroPath = PATH(puro);
+	/*uint8_t* pPuroPath = PATH(puro);
 	while(*path != 0)
 	{
 		*pPuroPath++ = *path++;
-	}
+	}*/
 
 	SCONFIGURACION(puro) = configuracion;
 	TOTALCAPTURAS(puro) = *totalMuestras;
 
-	puro->funcion
+	//puro->funcion
 	FILE(puro) = NULL;
 	FUNCIONCAPTURA(puro) = func;
 	SCAPTURAS(puro) = captura;
@@ -342,7 +343,7 @@ void captura_secuencias_completas_puro(void* stru)
 
 		struct Captura* captura = &SCAPTURASPOSI(puro,i);
 		inicializar_fichero_puertos(&SUCCION(captura), &PINMOTOR(SCONFIGURACION(puro)), 
-			(char*)PATH(puro), FILE(puro));
+			(char*)PATH(captura), FILE(puro));
 
 		printf("captura_secuencia_odorantes_completa_puro. TOTALVALVULAS(captura): %d\n",TOTALVALVULAS(captura));
 		for(int j = 0; j < TOTALVALVULAS(captura); j++)
@@ -425,7 +426,7 @@ void activar_puertos_GPIO(uint8_t** GPIOs, uint8_t* total_GPIOs)
 	#endif    	
 }
 
-void captura_muestras_datos(uint8_t* tipo, void* structModulacion)
+/*void captura_muestras_datos(uint8_t* tipo, void* structModulacion)
 {
 	switch(*tipo)
 	{
@@ -451,4 +452,4 @@ void captura_muestras_datos(uint8_t* tipo, void* structModulacion)
 
 		}
 	}
-}
+}*/

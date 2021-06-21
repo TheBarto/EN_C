@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include "moduloLecturaFicheros.h"
 
 #define VRESISTENCIA ((uint16_t) 2200)
 #define VTOTALMUESTRAS ((uint16_t) 2)
@@ -7,6 +8,18 @@
 
 int main(int arc, char* argv[])
 {
+
+
+	//Pruebas de la lectura de ficheros
+
+	char name[20] = "pruebaLectura.txt";
+	FILE file;
+	uint8_t modulacion = 0; //MPURO;
+	struct Captura captura;
+
+	aperturaFichero(name, &file);
+	obtenerSecuenciaCapturaDelFichero(&file, &modulacion, &captura);
+
 
 	//El directorio, o ruta global, o a partir de donde se encuentra el executable,
 	//sino dara error -> IMPORTANTE
@@ -85,9 +98,9 @@ int main(int arc, char* argv[])
 			printf("ordenValvulas,%d,%d: %p\n", i,j,(void *)&ordenValvulas[i][j]);
 	}*/
 
-	char clave[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+	/*char clave[8] = {0, 0, 0, 0, 0, 0, 0, 0};
 	char nombre[20];
-	sprintf(nombre, "AIN74%c", 0);
+	sprintf(nombre, "AIN74%c", 0);*/
 
 	//obtenerClavePWM(nombre, clave);
 	
