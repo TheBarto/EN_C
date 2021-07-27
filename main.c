@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "moduloLecturaFicheros.h"
+#include "headers/moduloLecturaFicheros.h"
 
 #define VRESISTENCIA ((uint16_t) 2200)
 #define VTOTALMUESTRAS ((uint16_t) 2)
@@ -13,13 +13,32 @@ int main(int arc, char* argv[])
 	//Pruebas de la lectura de ficheros
 
 	char name[20] = "pruebaLectura.txt";
-	FILE file;
+	FILE* file = NULL;
 	uint8_t modulacion = 0; //MPURO;
 	struct Captura captura;
 
-	aperturaFichero(name, &file);
-	obtenerSecuenciaCapturaDelFichero(&file, &modulacion, &captura);
+	file = aperturaFichero(name);
+	printf("Direccion de memoria: %p\n", (void *)file);
+	obtenerSecuenciaCapturaDelFichero(file, &modulacion, &captura);
 
+	struct Captura* pcaptura = &captura;
+
+	printf("El resultado obtenido:\n");
+
+	printf("MODULACION Y VALOR\n");
+	printf("SUCCION: %d\n", SUCCION(pcaptura));
+	printf("TEMPERATURA SENSOR: %d\n", TEMPERATURASENSOR(pcaptura));
+	printf("TIEMPO ANALISIS ODOR: %d\n", TIEMPOANALISISODOR(pcaptura));
+	printf("PATH: %s\n", PATH(pcaptura));
+	printf("FILEROOT: %s\n", FILEROOT(pcaptura));
+
+	printf("TOTAL VALVULAS: %d\n", TOTALVALVULAS(pcaptura));
+	
+	for(int i = 0; i < TOTALVALVULAS(pcaptura); i++)
+		printf("%d - ", ORDENVALVULAS(pcaptura)[i]);
+	printf("\n");
+	//printf("TIEMPO ANALISIS ODOR: %d\n", );
+	//printf("TOTAL VALVULAS: %d\n");	
 
 	//El directorio, o ruta global, o a partir de donde se encuentra el executable,
 	//sino dara error -> IMPORTANTE
