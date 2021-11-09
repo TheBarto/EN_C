@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include <float.h>
 
-enum Types{UINT8 = 0,UINT16,UINT32,UINT64,INT8,INT16,INT32,INT64,CHAR,UCHAR,FLOAT,DOUBLE,LONGDOUBLE};
+enum Types{T_UINT8 = 0,T_UINT16,T_UINT32,T_UINT64,T_INT8,T_INT16,T_INT32,T_INT64,T_FLOAT,T_DOUBLE,T_LONGDOUBLE};
 
 typedef enum Types Types;
 
@@ -38,7 +38,7 @@ typedef enum Types Types;
 
 #define TRUE  DFT_UNO_U8
 #define FALSE DFT_CERO_U8
-#define OK    DFT_UNO_U8
+#define OKK    DFT_UNO_U8
 #define ERR   DFT_CERO_U8
 
 typedef uint8_t bool;
