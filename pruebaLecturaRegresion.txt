@@ -1,0 +1,1 @@
+EN_CAPTURE:2,32,23,{7-8-9}(2),30,captura3,/media/sdcard/capturaRegresion/,30,70
