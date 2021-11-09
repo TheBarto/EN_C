@@ -39,16 +39,33 @@
 #define E_MAL_FORMADO	((uint8_t) 1)
 #define E_VALORES_INCORRECTOS	((uint8_t) 2)
 
+#define TOTAL_DATA_READED_FILE	((uint16_t) 5000)
+
+#define SENSOR_READ_PIN	((uint8_t) 0)
+#define SENSOR_HEAT_PIN	((uint8_t) 1)
+#define RESISTENCIA_VALUE	((uint8_t) 2)
+#define FREC_CAPT_SAMPLES	((uint8_t) 3)
+#define SUB_SAMPLES_SAMPLE	((uint8_t) 4)
+#define FREC_CAPT_SUB_SAMPLES	((uint8_t) 5)
+#define VCC_VALUE	((uint8_t) 6)
+#define TH_READ_PIN	((uint8_t) 7)
+#define FREC_CAPT_SAMPLES_TH	((uint8_t) 8)
+#define MOTOR_CTRL_PIN	((uint8_t) 9)
+#define N_ELECTROVALVULAS	((uint8_t) 10)
+#define TOTAL_ELECTROVALVULAS	((uint8_t) 11)
+
+
 //Variable global con el valor que indica el inicio de linea
 extern char cabeceraLinea[20];
+extern char cabeceraConf[20];
 
-FILE* aperturaFichero(const char* nombre);
+void aperturaFichero(const char* nombre, char* data);
 
 void procesarContenidoFichero(char* contenido);
 
 void obtenerLineaFichero(char* contenido, char* linea);
 
-uint8_t obtenerSecuenciaCapturaDelFichero(FILE* file, uint8_t* modulacion, struct Captura* captura);
+uint8_t obtenerSecuenciaCapturaDelFichero(const char* data, uint16_t* totalDatosLeidos, struct Captura* captura);
 
 uint8_t procesarInformacion(uint32_t* valor, uint8_t posicionLinea, struct Captura* captura);
 
@@ -58,7 +75,9 @@ void procesarGrupoPila(Stack* stack, uint32_t valor);
 
 void procesarUltimoElementoPila(Stack* stack, uint32_t valor);
 
-void procesarGrupoPila(Stack* stack, uint32_t valor);
+void cargarFuncionCapturaOdorantes(uint8_t* modulacion, struct Captura* captura);
 
-uint8_t procesarCadenaAperturaValvulas(uint8_t* cadenaApertura, uint8_t** dstArray, uint8_t* total_dstArray);
+uint8_t procesarCadenaAperturaValvulas(uint8_t* cadenaApertura, uint8_t** dstArray, uint8_t* total_dstArray, uint8_t numElemsCadenaApertura);
+
+uint8_t obtenerSecuenciaConfiguracion(const char* data, uint16_t* totalDatosLeidos, struct Configuracion* conf);
 #endif

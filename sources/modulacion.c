@@ -1,9 +1,11 @@
 #include "../headers/modulacion_comun.h"
 
-struct Cofiguracion* crear_configuracion_defecto()
-{
+#define DEBUG_GRADO1	((uint8_t) 0)
 
-	struct Cofiguracion* config = (struct Cofiguracion*)malloc(sizeof(*config));
+/*struct Configuracion* OLD_crear_configuracion_defecto()
+{*/
+
+	/*struct Cofiguracion* config = (struct Cofiguracion*)malloc(sizeof(*config));
 	config->nMuestrasCaptura = 10;
 	config->sleep = 1;
 	config->sleepTH = 60;
@@ -16,12 +18,12 @@ struct Cofiguracion* crear_configuracion_defecto()
 	config->totalElectrovalvulas = 0;
 	config->electrovalvulas = NULL;
 
-	return config;
-}
+	return NULL;//config;*/
+/*}*/
 
-void liberar_elems_struct_configuracion(struct Cofiguracion* config)
-{
-	config->nMuestrasCaptura = 0;
+/*void OLD_liberar_elems_struct_configuracion(struct Cofiguracion* config)
+{*/
+	/*config->nMuestrasCaptura = 0;
 	config->sleep = 0;
 	config->sleepTH = 0;
 	config->tEntreNMuestrasCaptura = 0;
@@ -30,23 +32,23 @@ void liberar_elems_struct_configuracion(struct Cofiguracion* config)
 	config->pinTH = 0;
 	config->pinVoltajeSensor = 0;
 	config->pinLecturaSensor = 0;
-	
+
 	for(uint8_t i = 0; i < config->totalElectrovalvulas; i++)
 	{
 		free(*(config->electrovalvulas+i));
-		*(config->electrovalvulas+i) = NULL;
+	 *(config->electrovalvulas+i) = NULL;
 	}
 
 	free(config->electrovalvulas);
 	config->electrovalvulas = NULL;
 
-	config->totalElectrovalvulas = 0;
-}
+	config->totalElectrovalvulas = 0;*/
+/*}*/
 
-void configurar_struct_configuracion(struct Cofiguracion* sConfiguracion, uint8_t* datosConfiguracion,
-	char** pelectrovalvulas, uint8_t* totalElectrovalvulas)
-{
-	sConfiguracion->nMuestrasCaptura = *datosConfiguracion;
+/*void OLD_configurar_struct_configuracion(struct Cofiguracion* sConfiguracion, uint8_t* datosConfiguracion,
+		char** pelectrovalvulas, uint8_t* totalElectrovalvulas)
+{*/
+	/*sConfiguracion->nMuestrasCaptura = *datosConfiguracion;
 	sConfiguracion->sleep = *(datosConfiguracion+1);
 	sConfiguracion->sleepTH = *(datosConfiguracion+2);
 	sConfiguracion->tEntreNMuestrasCaptura = *(datosConfiguracion+3);
@@ -57,52 +59,52 @@ void configurar_struct_configuracion(struct Cofiguracion* sConfiguracion, uint8_
 	sConfiguracion->pinLecturaSensor = *(datosConfiguracion+8);
 	sConfiguracion->totalElectrovalvulas = *totalElectrovalvulas;
 
-	sConfiguracion->electrovalvulas = (char **)malloc((*totalElectrovalvulas)*sizeof(*sConfiguracion->electrovalvulas));
+	sConfiguracion->electrovalvulas = (char **)malloc((*totalElectrovalvulas)*sizeof(*sConfiguracion->electrovalvulas));*/
 
-	for(uint8_t i = 0; i < *totalElectrovalvulas; i++)
+	/*for(uint8_t i = 0; i < *totalElectrovalvulas; i++)
 	{
 		char* pcharArg = (char *)pelectrovalvulas[i];
-		*(sConfiguracion->electrovalvulas+i) = (char *)calloc(SIZE_WORD, sizeof(char));
+	 *(sConfiguracion->electrovalvulas+i) = (char *)calloc(SIZE_WORD, sizeof(char));
 		char* pcharStruct = (char *)sConfiguracion->electrovalvulas[i];
 
 		while(*pcharArg != 0)
-			*pcharStruct++ = *pcharArg++;
-	}
+	 *pcharStruct++ = *pcharArg++;
+	}*/
 
-	#ifdef DEBUG_MODE
-		printf("Valores guardados: \n");
-		printf("nMuestrasCaptura: %d\n", sConfiguracion->nMuestrasCaptura);
-		printf("sleep: %d\n", sConfiguracion->sleep);
-		printf("sleepTH: %d\n", sConfiguracion->sleepTH);
-		printf("tEntreNMuestrasCaptura: %d\n", sConfiguracion->tEntreNMuestrasCaptura);
-		printf("VCC: %d\n", sConfiguracion->VCC);
-		printf("pinMotor: %d\n", sConfiguracion->pinMotor);
-		printf("pinTH: %d\n", sConfiguracion->pinTH);
-		printf("pinVoltajeSensor: %d\n", sConfiguracion->pinVoltajeSensor);
-		printf("pinLecturaSensor: %d\n", sConfiguracion->pinLecturaSensor);
-		printf("totalElectrovalvulas: %d\n", sConfiguracion->totalElectrovalvulas);
+/*#ifdef DEBUG_MODE*/
+	/*printf("Valores guardados: \n");
+	printf("nMuestrasCaptura: %d\n", sConfiguracion->nMuestrasCaptura);
+	printf("sleep: %d\n", sConfiguracion->sleep);
+	printf("sleepTH: %d\n", sConfiguracion->sleepTH);
+	printf("tEntreNMuestrasCaptura: %d\n", sConfiguracion->tEntreNMuestrasCaptura);
+	printf("VCC: %d\n", sConfiguracion->VCC);
+	printf("pinMotor: %d\n", sConfiguracion->pinMotor);
+	printf("pinTH: %d\n", sConfiguracion->pinTH);
+	printf("pinVoltajeSensor: %d\n", sConfiguracion->pinVoltajeSensor);
+	printf("pinLecturaSensor: %d\n", sConfiguracion->pinLecturaSensor);
+	printf("totalElectrovalvulas: %d\n", sConfiguracion->totalElectrovalvulas);
 
-		for(uint8_t i = 0; i < *totalElectrovalvulas; i++)
-		{
-			printf("pelectrovalvulas[%d]: %s\n", i, sConfiguracion->electrovalvulas[i]);
-		}		
-	#endif
-}
+	for(uint8_t i = 0; i < *totalElectrovalvulas; i++)
+	{
+		printf("pelectrovalvulas[%d]: %s\n", i, sConfiguracion->electrovalvulas[i]);
+	}*/
+/*#endif
+}*/
 
-struct Captura* inicializar_structs_capturas(uint16_t* totalMuestras, uint8_t* suctions, 
-	uint8_t* temperaturasSensor, int16_t* tiemposAnalisisOdor, uint8_t** ordenValvulas)
+/*struct Captura* OLD_inicializar_structs_capturas(uint16_t* totalMuestras, uint8_t* suctions,
+		uint8_t* temperaturasSensor, int16_t* tiemposAnalisisOdor, uint8_t** ordenValvulas)
 {
 	struct Captura* capturas = (struct Captura *)malloc(*totalMuestras * sizeof(*capturas));
 
 	for(uint16_t i = 0; i < *totalMuestras; i++)
 	{
 
-		#ifdef DEBUG_MODE
-			printf("2 - Valores en vuelta: %d: succion: %u, tempSensor: %d, tiempoAna: %d, totalValvulas: %d\n",
+#ifdef DEBUG_MODE
+		printf("2 - Valores en vuelta: %d: succion: %u, tempSensor: %d, tiempoAna: %d, totalValvulas: %d\n",
 				i, suctions[i], temperaturasSensor[i], tiemposAnalisisOdor[i], ordenValvulas[i][0]);
-		#else
-			//PWM.start(*pinMotor, *succion);
-		#endif		
+#else
+		//PWM.start(*pinMotor, *succion);
+#endif
 
 		capturas[i].succion = suctions[i];
 		capturas[i].temperaturaSensor = temperaturasSensor[i];
@@ -114,9 +116,9 @@ struct Captura* inicializar_structs_capturas(uint16_t* totalMuestras, uint8_t* s
 	}
 
 	return capturas;
-}
+}*/
 
-void liberar_structs_capturas(struct Captura* capturas, uint16_t* totalMuestras)
+/*void OLD_liberar_structs_capturas(struct Captura* capturas, uint16_t* totalMuestras)
 {
 
 	for(uint16_t i = 0; i < *totalMuestras; i++)
@@ -128,12 +130,12 @@ void liberar_structs_capturas(struct Captura* capturas, uint16_t* totalMuestras)
 	capturas = NULL;
 
 	return;
-}
+}*/
 
 /* Cambiar el char* por un char**, ya que ahora cada uno tiene su propia carpeta y nombre*/
-struct Puro* inicializar_struct_Puro(uint16_t resistencia, char* path, struct Cofiguracion* configuracion,
-	uint16_t* totalMuestras, uint8_t* suctions, uint8_t* temperaturasSensor, 
-	int16_t* tiemposAnalisisOdor, uint8_t** ordenValvulas, funcion_captura func)
+/*struct Puro* OLD_inicializar_struct_Puro(uint16_t resistencia, char* path, struct Cofiguracion* configuracion,
+		uint16_t* totalMuestras, uint8_t* suctions, uint8_t* temperaturasSensor,
+		int16_t* tiemposAnalisisOdor, uint8_t** ordenValvulas, funcion_captura func)
 {
 
 	//printf("1.C ordenValvulas: %p, ordenValvulas2: %p\n", (void *)ordenValvulas, (void *)&ordenValvulas[1]);	
@@ -141,39 +143,39 @@ struct Puro* inicializar_struct_Puro(uint16_t resistencia, char* path, struct Co
 
 	struct Puro* puro = (struct Puro *)calloc(1, sizeof(struct Puro));
 
-	puro->resistencia = resistencia;
+	puro->resistencia = resistencia;*/
 
 	/*uint8_t* pPuroPath = &puro->path[0];
 	while(*path != 0)
 	{
-		*pPuroPath++ = *path++;
+	 *pPuroPath++ = *path++;
 	}*/
 
-	puro->pTotalCapturas = *totalMuestras;
+	/*puro->pTotalCapturas = *totalMuestras;
 	puro->configuracion = configuracion;
 	puro->capturas = inicializar_structs_capturas(totalMuestras, suctions, 
-		temperaturasSensor, tiemposAnalisisOdor, ordenValvulas);
+			temperaturasSensor, tiemposAnalisisOdor, ordenValvulas);
 
 	puro->funcion = func;
 	puro->f = NULL;
 
 	return puro;
-}
+}*/
 
-struct Puro* inicializar_struct_Puro_struct(uint16_t resistencia, char* path, struct Cofiguracion* configuracion,
-	uint16_t* totalMuestras, funcion_captura func, struct Captura* captura)
+/*struct Puro* OLD_inicializar_struct_Puro_struct(uint16_t resistencia, char* path, struct Cofiguracion* configuracion,
+		uint16_t* totalMuestras, funcion_captura func, struct Captura* captura)
 {
 	struct Puro* puro = (struct Puro *)calloc(1, sizeof(struct Puro));
 
-	RESISTENCIA(puro) = resistencia;
+	RESISTENCIA(puro) = resistencia;*/
 
 	/*uint8_t* pPuroPath = PATH(puro);
 	while(*path != 0)
 	{
-		*pPuroPath++ = *path++;
+	 *pPuroPath++ = *path++;
 	}*/
 
-	SCONFIGURACION(puro) = configuracion;
+	/*SCONFIGURACION(puro) = configuracion;
 	TOTALCAPTURAS(puro) = *totalMuestras;
 
 	//puro->funcion
@@ -182,9 +184,9 @@ struct Puro* inicializar_struct_Puro_struct(uint16_t resistencia, char* path, st
 	SCAPTURAS(puro) = captura;
 
 	return puro;
-}
+}*/
 
-void liberar_struct_Puro(struct Puro* puro)
+/*void OLD_liberar_struct_Puro(struct Puro* puro)
 {
 	liberar_structs_capturas(SCAPTURAS(puro), &TOTALCAPTURAS(puro));
 	liberar_elems_struct_configuracion(SCONFIGURACION(puro));
@@ -201,10 +203,10 @@ void liberar_struct_Puro(struct Puro* puro)
 	puro = NULL;
 
 	return;
-}
+}*/
 
-struct Regresion* inicializar_struct_Regresion(uint16_t resistencia, uint8_t* path, struct Captura* capturas, 
-	struct Cofiguracion* configuracion)
+/*struct Regresion* OLD_inicializar_struct_Regresion(uint16_t resistencia, uint8_t* path, struct Captura* capturas,
+		struct Cofiguracion* configuracion)
 {
 
 	struct Regresion* regresion = (struct Regresion *)malloc(sizeof(regresion));
@@ -219,18 +221,20 @@ struct Regresion* inicializar_struct_Regresion(uint16_t resistencia, uint8_t* pa
 	regresion->capturas = capturas;
 
 	return regresion;
-}
+}*/
+
 
 // Retornar algun mensaje o algo para error
 void inicializar_fichero_puertos(uint8_t* succion, uint8_t* pinMotor, char* path, FILE* f)
 {
 
-	#ifdef DEBUG_MODE
-		printf("Activo PWM del motor\n");
-		printf("Path: %s\n", path);
-	#else
-		//PWM.start(*pinMotor, *succion);
-	#endif	
+#ifdef DEBUG_MODE
+	printf("Activo PWM del motor\n");
+	printf("Path: %s\n", path);
+#else
+	//PWM.
+	iniciar_puerto_PWM(pinMotor, *succion, FRECUENCIA_DEFECTO, POLARIDAD_DEFECTO);
+#endif
 
 	// Comprobamos que el directorio existe, y lo creamos en caso contrario
 	struct stat sb = {0};
@@ -238,14 +242,15 @@ void inicializar_fichero_puertos(uint8_t* succion, uint8_t* pinMotor, char* path
 	if(stat(path, &sb) == -1)
 	{
 		printf("No creado\n");
-		if(mkdir(path, 0755) == 0)
+		//Bloqueo porque falla
+		/*if(mkdir(path, 0755) == 0)
 		{
 			printf("Creado\n");
 		}
 		else
 		{
 			printf("Error, Errno: %s\n",strerror(errno));
-		}
+		}*/
 	}
 
 	// Obtenemos la fecha
@@ -262,13 +267,11 @@ void inicializar_fichero_puertos(uint8_t* succion, uint8_t* pinMotor, char* path
 
 	// Ponemos el nombre al archivo y lo creamos
 	sprintf(&ruta_archivo[0],"%s/capture_%04d_%02d_%02d-%02d_%02d_%02d.dat%c", path, tm->tm_year+1900, 
-		tm->tm_mon+1, tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec,0);
+			tm->tm_mon+1, tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec,0);
 
-	#ifdef DEBUG_MODE
-		printf("ruta_archivo: %s\n",ruta_archivo);
-	#else
-		//PWM.start(*pinMotor, *succion);
-	#endif
+#ifdef DEBUG_MODE
+	printf("ruta_archivo: %s\n",ruta_archivo);
+#endif
 
 
 
@@ -285,47 +288,41 @@ void inicializar_fichero_puertos(uint8_t* succion, uint8_t* pinMotor, char* path
 }
 
 /* Para cada captura, obtenemos los datos del sensor */
-void captura_secuencia_odorantes_completa_puro(struct Captura* captura, struct Cofiguracion* config, uint16_t resistencia)
+void captura_secuencia_odorantes_completa_puro(void* capt, struct Configuracion* config, FILE* file, uint16_t nMuestra)
 {
+	float tempTH = 0;
+	float humTH = 0;
+	float timeUSleep = (P_CONF_FREC_SUB_SAMPLES(config) / P_CONF_SUB_SAMPLES(config));
+	float value = 20.0;
 
-	printf("captura_secuencia_odorantes_completa_puro. TIEMPOANALISISODOR(captura): %d\n",TIEMPOANALISISODOR(captura));
-	for(int i = 0; i < TIEMPOANALISISODOR(captura); i++)
+	time_t seconds_ini = time(NULL);
+	struct tm* tm_struct = localtime(&seconds_ini);
+
+	for(uint8_t i = 0; i < P_CONF_SUB_SAMPLES(config); i++)
 	{
-		time_t seconds_ini = time(NULL);
-
-		uint8_t value = 0;
-
-		//Lectura del ADC -> ¿incorrecta la lectura?
-		#ifdef DEBUG_MODE
-			printf("Hacemos una inicial lectura del ADC\n");
-		#else
-			//ADC.read(Puro.sensorPin2600)
-		#endif		
-		
-
-		for(uint8_t i = 0; i < NMUESTRASCAPTURA(config); i++)
-		{
-			#ifdef DEBUG_MODE
-				printf("Hacemos una lectura - %d del ADC\n",i);
-			#else
-				//value += ADC.read(Puro.sensorPin2600)*1800;
-			#endif				
-			
-			usleep(TNMUESTRASCAPTURA(config));
-		}
-
-		value/=NMUESTRASCAPTURA(config);
-
-		uint16_t resistencia_interna=((VCC(config)*resistencia)/(value/1000.))-resistencia;
-
-		#ifdef DEBUG_MODE
-			printf("Resistencia interna: %d\n",resistencia_interna);
-		#endif		
-
-		time_t seconds_end = time(NULL)-seconds_ini;
-
-		usleep(SLEEP(config) - seconds_end);
+#ifdef DEBUG_MODE
+		//printf("Hacemos una lectura - %d del ADC\n",i);
+#else
+		//ADC.
+		value += (leer_valor_ADC(P_CONF_SENSOR_READ_PIN(config))*1800);
+#endif
+		usleep(timeUSleep);
 	}
+
+	value/=P_CONF_SUB_SAMPLES(config);
+
+	float resistencia_interna=((P_CONF_VCC(config)*P_CONF_RESISTENCIA(config))/(value/1000.))-P_CONF_RESISTENCIA(config);
+
+#ifdef DEBUG_MODE
+	printf("Resistencia interna: %d\n",resistencia_interna);
+#endif
+
+	//printf con los datos
+	printf("Datos: %d %.3f %.3f 100 %.3f %.3f %d_%d_%d-%d_%d_%d\n", nMuestra, value, resistencia_interna, tempTH, humTH,
+			(tm_struct->tm_year+1900), (tm_struct->tm_mon+1), tm_struct->tm_mday,
+			tm_struct->tm_hour, tm_struct->tm_min, tm_struct->tm_sec);
+
+	usleep(P_CONF_FREC_CAPTURA_SAMPLES(config) - (time(NULL)-seconds_ini));
 
 	return;
 }
@@ -333,36 +330,80 @@ void captura_secuencia_odorantes_completa_puro(struct Captura* captura, struct C
 /* Le pasamos una estructura de modulacion, con las diferentes capturas indicadas. Cada
 captura contiene un conjunto de apertura y cierre de valvulas, y tiempos de captura 
 diferentes. */
-void captura_secuencias_completas_puro(void* stru)
+/*ESTA ES CORRECTA, FALTA PERFILARLA - CAMBIAR EL NOMBRE TAMBIEN*/
+void captura_secuencias_completas_puro(struct Captura* captura, struct Configuracion* config)
 {
-	
-	struct Puro* puro = (struct Puro *)stru;	
 
-	for(int i = 0; i < TOTALCAPTURAS(puro); i++)
+	uint16_t nMuestras = 0;
+	char nombreFichero[500];
+
+	time_t tm = time(NULL);
+	struct tm* tm_struct = localtime(&tm);
+
+	sprintf(nombreFichero, "%s/%s-%d_%d_%d-%d_%d_%d.dat%c",P_CAPT_PATH(captura), P_CAPT_FILE_ROOT(captura),
+			tm_struct->tm_year+1900, tm_struct->tm_mon+1, tm_struct->tm_mday, tm_struct->tm_hour,
+			tm_struct->tm_min, tm_struct->tm_sec, 0);
+
+	FILE* file = fopen(nombreFichero, "w");
+
+#ifdef DEBUG_GRADO1
+	printf("%s\n", nombreFichero);
+#endif
+
+	if(!file)
 	{
-
-		struct Captura* captura = &SCAPTURASPOSI(puro,i);
-		inicializar_fichero_puertos(&SUCCION(captura), &PINMOTOR(SCONFIGURACION(puro)), 
-			(char*)PATH(captura), FILE(puro));
-
-		printf("captura_secuencia_odorantes_completa_puro. TOTALVALVULAS(captura): %d\n",TOTALVALVULAS(captura));
-		for(int j = 0; j < TOTALVALVULAS(captura); j++)
-		{
-			abrir_electrovalvulas((char **)ELECTROVALVULASTOTAL(SCONFIGURACION(puro)), 
-				ORDENVALVULAS(captura), j);
-			
-			captura_secuencia_odorantes_completa_puro(captura, SCONFIGURACION(puro), RESISTENCIA(puro));
-			
-			cerrar_electrovalvulas((char **)ELECTROVALVULASTOTAL(SCONFIGURACION(puro)), 
-				ORDENVALVULAS(captura), j);		
-		}
-		cierre(stru, MPURO, FILE(puro));
+		printf("Fallo al abrir el fichero %s, finalizamos la ejecucion\n", nombreFichero);
+		return;
 	}
+
+	for(int i = 0; i < P_CAPT_TOTAL_VALVULAS(captura); i++)
+	{
+		abrir_electrovalvula(P_CONF_ELECTROVALVULAS(config),
+				P_CAPT_ORDEN_VALVULAS(captura)[i]);
+
+#ifdef DEBUG_GRADO1
+		printf("captura_secuencia_odorantes_completa_puro. TOTALVALVULAS(captura): %d\n",P_CAPT_TOTAL_VALVULAS(captura));
+#endif
+
+		for(int j = 0; j < P_CAPT_TIEMPO_ANALISIS_ODOR(captura); j++)
+		{
+			P_CAPT_FUNCION(captura)(captura, config, file, nMuestras);
+			nMuestras++;
+		}
+
+		cerrar_electrovalvulas(P_CONF_ELECTROVALVULAS(config),
+				P_CONF_TOTAL_VALS(config));
+	}
+
+	cierreDescriptoresAbiertos(config, file);
 
 	return;	
 }
 
-void cierre(void* structModulacion, uint8_t tipo, FILE* file)
+
+void OLD_captura_secuencia_odorantes(struct Captura* captura, struct Cofiguracion* config)
+{
+
+	/*inicializar_fichero_puertos(&SUCCION(captura), &PINMOTOR(SCONFIGURACION(puro)),
+			(char*)PATH(captura), FILE(puro));*/
+
+	printf("captura_secuencia_odorantes_completa_puro. TOTALVALVULAS(captura): %d\n",P_CAPT_TOTAL_VALVULAS(captura));
+	for(int j = 0; j < P_CAPT_TOTAL_VALVULAS(captura); j++)
+	{
+		/*abrir_electrovalvulas((char **)ELECTROVALVULASTOTAL(SCONFIGURACION(puro)),
+				ORDENVALVULAS(captura), j);*/
+
+		//captura_secuencia_odorantes_completa_puro(captura, SCONFIGURACION(puro), RESISTENCIA(puro));
+
+		/*cerrar_electrovalvulas((char **)ELECTROVALVULASTOTAL(SCONFIGURACION(puro)),
+				ORDENVALVULAS(captura), j);*/
+	}
+	//cierre(stru, MPURO, FILE(puro));
+
+	return;
+}
+
+void cierreDescriptoresAbiertos(struct Configuracion* conf, FILE* file)
 {
 
 	//Si es distinto de NULL liberamos
@@ -372,58 +413,68 @@ void cierre(void* structModulacion, uint8_t tipo, FILE* file)
 		file = NULL;
 	}
 
-	#ifdef DEBUG_MODE
+	if(P_CONF_MOTOR_CTRL_PIN(conf)[0] != 0)
+	{
+#ifdef DEBUG_MODE
 		printf("Paro PWM del motor\n");
 		printf("Limpio PWM\n");
-	#else
-		//PWM.stop(Modulacion.motorPin)
-    	//PWM.stop(heatPin)
+#else
+		//PWM.
+		parar_puerto_PWM(P_CONF_MOTOR_CTRL_PIN(conf));
+		parar_puerto_PWM(P_CONF_SENSOR_HEAT_PIN(conf));
 		//PWM.cleanup()
-	#endif
+#endif
+	}
 
-	//cerrar_electrovalvulas();
+	cerrar_electrovalvulas(P_CONF_ELECTROVALVULAS(conf),
+			P_CONF_TOTAL_VALS(conf));
 
-    //fclose(FILE(structModulacion));
+	return;
 }
 
-void abrir_electrovalvulas(char** p_total_electrovalvulas, 
-	uint8_t* p_electrovalvulas_seleccionadas, 
-	uint8_t electrovalvula)
+/* Nos centramos en abrir una electrovalvula al momento */
+void abrir_electrovalvula(uint8_t p_electrovalvulas[MAX_ELECTROVALVULAS][MAX_TAM_NOMBRE],
+		uint8_t electrovalvula)
 {
-
-	printf("Abrimos la valvula: %s\n", p_total_electrovalvulas[p_electrovalvulas_seleccionadas[electrovalvula]]);
-	#ifdef DEBUG_MODE
-		printf("Abrimos la valvula: %s\n", p_total_electrovalvulas[p_electrovalvulas_seleccionadas[electrovalvula]]);
-	#else
-		//for(uint8_t i = 0; i < total_electrovalvulas; i++)
-	    	//GPIO.output(Modulacion.electrovalvulas[number_elect-1], GPIO.HIGH)
-    #endif
+#ifdef DEBUG_MODE
+	printf("Abrimos la valvula: %s\n", p_electrovalvulas[electrovalvula]);
+#else
+	//GPIO.
+	salida_GPIO(p_electrovalvulas[electrovalvula], HIGH);
+#endif
 }
 
-void cerrar_electrovalvulas(char** p_total_electrovalvulas, 
-	uint8_t* p_electrovalvulas_seleccionadas, 
-	uint8_t electrovalvula)
+void cerrar_electrovalvulas(uint8_t p_electrovalvulas[MAX_ELECTROVALVULAS][MAX_TAM_NOMBRE],
+		uint8_t total_electro)
 {
 
-	#ifdef DEBUG_MODE
-		printf("Cerramos la valvula: %s\n", p_total_electrovalvulas[p_electrovalvulas_seleccionadas[electrovalvula]]);
-	#else
-		//for(uint8_t i = 0; i < total_electrovalvulas; i++)	
-    		//GPIO.output(Modulacion.electrovalvulas[number_elect-1], GPIO.LOW)
-    #endif    	
+	if(total_electro > 0)
+	{
+		for(uint8_t i = 0; i < total_electro; i++)
+		{
+#ifdef DEBUG_MODE
+			printf("Cerramos la valvula: %s\n", p_electrovalvulas[i]);
+#else
+			//GPIO.
+			salida_GPIO(p_electrovalvulas[i], LOW);
+#endif
+		}
+	}
 }
 
 //Esta función tiene como objetivo activar los puertos GPIO en caso de ser necesarios
 void activar_puertos_GPIO(uint8_t** GPIOs, uint8_t* total_GPIOs)
 {
 
-	#ifdef DEBUG_MODE
-		for(uint8_t i = 0; i < *total_GPIOs; i++)
-	   		printf("Activamos puerto GPIO: %s\n", *(GPIOs+i));
-	#else	
-		//for(uint8_t i = 0; i < *total_GPIOs; i++)
-    		//GPIO.setup(*(GPIOs+i),GPIO.OUT);
-	#endif    	
+#ifdef DEBUG_MODE
+	for(uint8_t i = 0; i < *total_GPIOs; i++)
+		printf("Activamos puerto GPIO: %s\n", *(GPIOs+i));
+#else
+	//GPIO.
+	for(uint8_t i = 0; i < *total_GPIOs; i++)
+		iniciar_GPIO(*(GPIOs+i), OUTPUT, PULL_UP_DOWN_DEFECTO, RETRASO_GPIO_DEFECTO, INICIAL_DEFECTO);
+
+#endif
 }
 
 /*void captura_muestras_datos(uint8_t* tipo, void* structModulacion)
