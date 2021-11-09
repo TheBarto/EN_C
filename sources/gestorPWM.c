@@ -1,5 +1,7 @@
 #include "../headers/gestorPWM.h"
 
+//#define DEBUG
+
 int8_t obtenerClavePWM(const char* nombre, char* clavePuerto)
 {
 
@@ -19,8 +21,8 @@ int8_t obtenerClavePWM(const char* nombre, char* clavePuerto)
 			printf("Vuelta bucle: %s  -  %s\n", pPins->name, pPins->key);
 		#endif
 
-		char* pName = pPins->name;
-		char* pArg = nombre;
+		char* pName = (char *)pPins->name;
+		char* pArg = (char *)nombre;
 
 		//while((*pArg++ == *pName++) && (*pName != 0)). De esta forma queda mas comprimido, pero el ultimo caracter no se comprueba
 		while((*pArg == *pName) && (*pName != 0))
@@ -35,7 +37,7 @@ int8_t obtenerClavePWM(const char* nombre, char* clavePuerto)
 			#ifdef DEBUG
 				printf("Encontrado algo con name :) %s\n",pPins->name);
 			#endif
-			pName = pPins->name;
+			pName = (char *)pPins->name;
 		}
 		else
 		{
@@ -44,8 +46,8 @@ int8_t obtenerClavePWM(const char* nombre, char* clavePuerto)
 
 		if(pName == NULL)
 		{
-			pName = pPins->key;
-			pArg = nombre;
+			pName = (char *)pPins->key;
+			pArg = (char *)nombre;
 
 			while((*pName != 0) && (*pArg == *pName))
 			{
@@ -58,7 +60,7 @@ int8_t obtenerClavePWM(const char* nombre, char* clavePuerto)
 				#ifdef DEBUG
 					printf("Encontrado algo con key :) %s\n",pPins->key);
 				#endif
-				pName = pPins->key;
+				pName = (char *)pPins->key;
 			}
 			else
 			{
@@ -75,6 +77,8 @@ int8_t obtenerClavePWM(const char* nombre, char* clavePuerto)
 			pArg = clavePuerto;
 			while(*pName!=0)
 				*pArg++=*pName++;
+			//IMPORTANTE, PONEMOS EL CARACTER 0 DE FIN DE CADENA
+			*pArg = 0;
 
 			return OK;
 		}
@@ -83,22 +87,22 @@ int8_t obtenerClavePWM(const char* nombre, char* clavePuerto)
 	return E_ARG_INVALIDO;
 }
 
-int8_t iniciar_puerto_PWM(const char* nombre, uint16_t* frecuencia, uint8_t* polaridad, uint8_t* cicloTrabajo)
+int8_t iniciar_puerto_PWM(const char* nombre, float cicloTrabajo, float frecuencia, float polaridad)
 {
 
-	if(*frecuencia <= 0)
+	if(frecuencia <= 0.0)
 	{
 		printf("Los valores de frecuencia deben ser mayores que 0\n");
 		return E_ARG_INVALIDO;
 	}
 
-	if(*cicloTrabajo < 0 || *cicloTrabajo > 100)
+	if((cicloTrabajo < 0.0) || (cicloTrabajo > 100.0))
 	{
 		printf("Los valores del ciclo de trabajo deben de ser mayores que 0 y menores de 100\n");
 		return E_ARG_INVALIDO;		
 	}
 
-	if(*polaridad < 0 || *polaridad > 1)
+	if((polaridad < 0.0) || (polaridad > 1.0))
 	{
 		printf("El valor de la polaridad debe de ser 0 o 1\n");
 		return E_ARG_INVALIDO;		
@@ -112,7 +116,7 @@ int8_t iniciar_puerto_PWM(const char* nombre, uint16_t* frecuencia, uint8_t* pol
 	}
 
 	//pwm_start
-	switch(/*pwm_start(clave, *cicloTrabajo, *frecuencia, *polaridad)*/2)
+	switch(pwm_start(clave, cicloTrabajo, frecuencia, polaridad))
 	{
 
 		case E_ACCESO://BBIO_ACCESS:
@@ -173,7 +177,7 @@ int8_t parar_puerto_PWM(const char* nombre)
 		return 1;		
 	}
 
-	switch(2/*pwm_disable(&clave[0])*/)
+	switch(pwm_disable(&clave[0]))
 	{
 		case E_SISTEMA_FIC://BBIO_ACCESS:
 		{
@@ -191,10 +195,10 @@ int8_t parar_puerto_PWM(const char* nombre)
 	return OK;
 }
 
-int8_t cambiar_ciclo_trabajo(const char* nombre, uint8_t* cicloTrabajo)
+int8_t cambiar_ciclo_trabajo(const char* nombre, float cicloTrabajo)
 {
 
-	if(*cicloTrabajo < 0 || *cicloTrabajo > 100)
+	if((cicloTrabajo < 0.0) || (cicloTrabajo > 100.0))
 	{
 		printf("Los valores del ciclo de trabajo deben de ser mayores que 0 y menores de 100\n");
 		return E_ARG_INVALIDO;		
@@ -208,7 +212,7 @@ int8_t cambiar_ciclo_trabajo(const char* nombre, uint8_t* cicloTrabajo)
 		return E_ARG_INVALIDO;		
 	}
 
-	if(2/*wm_set_duty_cicle(clave, *cicloTrabajo) != OK*/)
+	if(pwm_set_duty_cycle(clave, cicloTrabajo) != OK)
 	{
 		printf("Error al cambiar ciclo de trabajo. Arranque el PWM primero\n");
 		return E_ACCESO;		
@@ -217,10 +221,10 @@ int8_t cambiar_ciclo_trabajo(const char* nombre, uint8_t* cicloTrabajo)
 	return OK;
 }
 
-int8_t cambiar_frecuencia(const char* nombre, uint8_t* frecuencia)
+int8_t cambiar_frecuencia(const char* nombre, float frecuencia)
 {
 
-	if(*frecuencia < 0)
+	if(frecuencia < 0.0)
 	{
 		printf("Los valores del ciclo de trabajo deben de ser mayores que 0 y menores de 100\n");
 		return E_ARG_INVALIDO;		
@@ -234,7 +238,7 @@ int8_t cambiar_frecuencia(const char* nombre, uint8_t* frecuencia)
 		return E_ARG_INVALIDO;		
 	}
 
-	switch(2/*pwm_set_frequency(clave, *frecuencia)*/)
+	switch(pwm_set_frequency(clave, frecuencia))
 	{
 		case E_SISTEMA_FIC:
 		{
