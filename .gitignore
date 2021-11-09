@@ -54,3 +54,8 @@ dkms.conf
 Pruebas
 capturaBasica.c
 pruebaLectura.txt
+pruebas/*
+oldStuff/*
+comun.h
+defines1.h
+tipos.h

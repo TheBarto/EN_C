@@ -2,6 +2,14 @@
 #include <stdlib.h>
 #include "headers/moduloLecturaFicheros.h"
 
+//#define BUSCADORES
+
+#ifdef BUSCADORES
+#include "headers/gestorPWM.h"
+#include "headers/gestorADC.h"
+#include "headers/gestorGPIO.h"
+#endif
+
 #define VRESISTENCIA ((uint16_t) 2200)
 #define VTOTALMUESTRAS ((uint16_t) 2)
 #define VVALVULASPORCAPTURA ((uint8_t) 5)
@@ -9,21 +17,142 @@
 int main(int arc, char* argv[])
 {
 
+	setbuf(stdout, NULL);
+
+	//Pruebas buscadores de puertos
+#ifdef BUSCADORES
+
+	char clave[15] = {0};
+
+	//PWM
+	printf(">>>> PWM <<<<\n");
+
+	obtenerClavePWM("P9_21", &clave[0]);
+	printf("> P9_21 - %s\n", clave);
+
+	obtenerClavePWM("UART2_TXD", &clave[0]);
+	printf("> UART2_TXD - %s\n", clave);
+
+	obtenerClavePWM("P8_37", &clave[0]);
+	printf("> P8_37 - %s\n", clave);
+
+	obtenerClavePWM("UART5_TXD", &clave[0]);
+	printf("> UART5_TXD - %s\n", clave);
+
+	obtenerClavePWM("P8_9", &clave[0]);
+	printf("> P8_9 - %s\n", clave);
+
+	obtenerClavePWM("TIMER5", &clave[0]);
+	printf("> TIMER5 - %s\n", clave);
+
+	//ADC
+	printf(">>>> ADC <<<<\n");
+	uint8_t adc = 0;
+
+	obtener_numero_ADC("AIN1", &adc);
+	printf("> AIN1 - %d\n", adc);
+	obtener_numero_ADC("P9_40", &adc);
+	printf("> P9_40 - %d\n", adc);
+
+	obtener_numero_ADC("AIN2", &adc);
+	printf("> AIN2 - %d\n", adc);
+	obtener_numero_ADC("P9_37", &adc);
+	printf("> P9_37 - %d\n", adc);
+
+	obtener_numero_ADC("AIN6", &adc);
+	printf("> AIN6 - %d\n", adc);
+	obtener_numero_ADC("P9_35", &adc);
+	printf("> P9_35 - %d\n", adc);
+
+	//GPIO
+	printf(">>>> GPIO <<<<\n");
+	uint16_t gpio = 0;
+
+	obtener_numero_gpio("GPIO1_14", &gpio);
+	printf("> GPIO1_14 - %d\n", gpio);
+	obtener_numero_gpio("P8_16", &gpio);
+	printf("> P8_16 - %d\n", gpio);
+
+	obtener_numero_gpio("GPIO1_4", &gpio);
+	printf("> GPIO1_4 - %d\n", gpio);
+	obtener_numero_gpio("P8_23", &gpio);
+	printf("> P8_23 - %d\n", gpio);
+
+	obtener_numero_gpio("GPIO3_19", &gpio);
+	printf("> GPIO3_19 - %d\n", gpio);
+	obtener_numero_gpio("P9_27", &gpio);
+	printf("> P9_27 - %d\n", gpio);
+
+	return 1;
+#endif
 
 	//Pruebas de la lectura de ficheros
 
-	char name[20] = "pruebaLectura.txt";
-	FILE* file = NULL;
-	uint8_t modulacion = 0; //MPURO;
+	char name1[20] = "pruebaConf.txt";// "pruebaLectura.txt";
+	char name2[30] = "pruebaLecturaPuro.txt";
+	//uint8_t modulacion = 0; //MPURO;
 	struct Captura captura;
+	struct Configuracion conf;
+	char data[TOTAL_DATA_READED_FILE];
 
-	file = aperturaFichero(name);
-	printf("Direccion de memoria: %p\n", (void *)file);
-	obtenerSecuenciaCapturaDelFichero(file, &modulacion, &captura);
+	aperturaFichero(name1, data);
+	//printf("Direccion de memoria: %p\n", (void *)file);
+	uint16_t totalDatosLeidos = 0;
 
+	obtenerSecuenciaConfiguracion(data, &totalDatosLeidos, &conf);
+	struct Configuracion* pconf = &conf;
+
+
+	printf("El resultado 1 obtenido:\n");
+
+	printf("MODULACION Y VALOR\n");
+	printf("Pin lectura sensor: %s\n", pconf->sensorReadPin);
+	printf("Pin calentamiento sensor: %s\n", pconf->sensorHeatPin);
+	printf("Pin control motor: %s\n", pconf->motorCtrlPin);
+	printf("Frecuencia captura muestras: %d\n", pconf->frecCaptSamples);
+	printf("Frecuencia captura muestras TH: %d\n", pconf->frecCaptSamplesTH);
+
+	printf("VCC: %d\n", pconf->VCC);
+	printf("Pin lectura TH: %s\n", pconf->THReadPin);
+	printf("Sub muestras por muestras: %d\n", pconf->subSamplesForSample);
+	printf("Frecuencia captura sub muestras por muestras: %d\n", pconf->frecCaptSubSamples);
+	printf("Resistencia: %d\n", pconf->resistencia);
+
+	printf("Electrovalvulas: %d\n", pconf->totalElectrovalvulas);
+	for(int i = 0; i < pconf->totalElectrovalvulas; i++)
+		printf("%s - ", pconf->electrovalvulas[i]);
+	printf("\n");
+
+	aperturaFichero(name2, data);
+	totalDatosLeidos = 0;
+	obtenerSecuenciaCapturaDelFichero(data, &totalDatosLeidos, &captura);
 	struct Captura* pcaptura = &captura;
 
-	printf("El resultado obtenido:\n");
+	printf("\nEl resultado 2 obtenido:\n");
+
+	printf("MODULACION Y VALOR\n");
+	printf("SUCCION: %d\n", P_CAPT_SUCCION(pcaptura));
+	printf("TEMPERATURA SENSOR: %d\n", P_CAPT_TEMPERATURA_SENSOR(pcaptura));
+	printf("TIEMPO ANALISIS ODOR: %d\n", P_CAPT_TIEMPO_ANALISIS_ODOR(pcaptura));
+	printf("PATH: %s\n", P_CAPT_PATH(pcaptura));
+	printf("FILEROOT: %s\n", P_CAPT_FILE_ROOT(pcaptura));
+
+	printf("TOTAL VALVULAS: %d\n", P_CAPT_TOTAL_VALVULAS(pcaptura));
+	
+	for(int i = 0; i < P_CAPT_TOTAL_VALVULAS(pcaptura); i++)
+		printf("%d - ", P_CAPT_ORDEN_VALVULAS(pcaptura)[i]);
+	printf("\n");
+
+	printf("Tendencia: %d\n", pcaptura->valoresCapturaExtra[0]);
+	printf("HeatSensor: %d\n", pcaptura->valoresCapturaExtra[1]);
+
+	printf("\n\nComenzamos captura de prueba\n\n");
+
+	captura_secuencias_completas_puro(&captura, &conf);
+
+	/*obtenerSecuenciaCapturaDelFichero(data, &totalDatosLeidos, &captura);
+
+	printf("El resultado 2 obtenido:\n");
 
 	printf("MODULACION Y VALOR\n");
 	printf("SUCCION: %d\n", SUCCION(pcaptura));
@@ -33,10 +162,10 @@ int main(int arc, char* argv[])
 	printf("FILEROOT: %s\n", FILEROOT(pcaptura));
 
 	printf("TOTAL VALVULAS: %d\n", TOTALVALVULAS(pcaptura));
-	
+
 	for(int i = 0; i < TOTALVALVULAS(pcaptura); i++)
 		printf("%d - ", ORDENVALVULAS(pcaptura)[i]);
-	printf("\n");
+	printf("\n");*/
 	//printf("TIEMPO ANALISIS ODOR: %d\n", );
 	//printf("TOTAL VALVULAS: %d\n");	
 
