@@ -18,7 +18,6 @@
 
 //#define ERROR				((uint8_t) 1)
 
-
 typedef struct pins_t
 {
 	const char* name;
