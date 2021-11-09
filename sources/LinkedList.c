@@ -20,15 +20,16 @@ Node* createNodeDeepCopy(void* data, userCopyFunction function)
 	return node;
 }
 
-void addNewNode(Node* node, Node* newNode)
+/* ANIADIR UN NODO NUEVO EN LA LISTA (node2) DESPUES DE node */
+void addNewNode(Node* node, Node* node2)
 {
-	NEXT(newNode) = NEXT(node);
+	NEXT(node2) = NEXT(node);
 	
-	PREVIOUS(newNode) = (struct Node*)node;
+	PREVIOUS(node2) = (struct Node*)node;
 
-	if(NEXT(newNode))
-		PREVIOUS(NEXT(newNode)) = (struct Node*)newNode;
-	NEXT(node) = (struct Node*)newNode;
+	if(NEXT(node2))
+		PREVIOUS(NEXT(node2)) = (struct Node*)node2;
+	NEXT(node) = (struct Node*)node2;
 
 	return;
 }
@@ -72,7 +73,6 @@ void freeDeepCopyNodeLinkedList(Node* node)
 	node = NULL;	
 }
 
-
 /* CREA UNA LISTA */
 LinkedList* createLinkedList()
 {
@@ -106,7 +106,7 @@ void appendElem(LinkedList* list, void* data)
 }
 
 /* ANADE UN ELEMENTO A LA LISTA EN LA POSICION INDICADA */
-void appendElemIndex(LinkedList* list, void* data, uint32_t pos)
+void appendElemIndex(LinkedList* list, void* data, int32_t pos)
 {
 	uint32_t i = DFT_CERO_U32;
 	Node* node = FIRST(list);
@@ -118,18 +118,22 @@ void appendElemIndex(LinkedList* list, void* data, uint32_t pos)
 	return;
 }
 
-/* AÑADE UN ELEMENTO A LA LISTA COPIANDO EL ELEMENTO */
+/* ANIADE UN ELEMENTO A LA LISTA COPIANDO EL ELEMENTO */
 void appendElemDeepCopy(LinkedList* list, void* data, userCopyFunction function)
 {
 	if(!LAST(list))
 	{
-		printf("appendElemDeepCopy > vacia y guardar: %d\n", *(uint32_t *)data);
+#ifdef DEBUG_GRADO3
+		printf("appendElemDeepCopy > vacia y guardar: %d\n", *(uint8_t *)data);
+#endif
 		FIRST(list) = createNodeDeepCopy(data, function);
 		LAST(list) = FIRST(list);
 	}
 	else
 	{
-		printf("appendElemDeepCopy > NO vacia y guardar: %d\n", *(uint32_t *)data);
+#ifdef DEBUG_GRADO3
+		printf("appendElemDeepCopy > NO vacia y guardar: %d\n", *(uint8_t *)data);
+#endif
 		Node* node = createNodeDeepCopy(data, function);
 		addNewNode(LAST(list), node);
 		LAST(list) = node;
@@ -140,28 +144,29 @@ void appendElemDeepCopy(LinkedList* list, void* data, userCopyFunction function)
 }
 
 /* ANADE UN ELEMENTO A LA LISTA EN LA POSICION INDICADA COPIANDO EL ELEMENTO */
-void appendElemIndexDeepCopy(LinkedList* list, void* data, uint32_t pos, userCopyFunction function)
+void appendElemIndexDeepCopy(LinkedList* list, void* data, int32_t pos, userCopyFunction function)
 {
 	
 	if(getNElems(list) == 0)
 	{
-		appendElem(list, data);
+		appendElemDeepCopy(list, data, function);
 	}
 	else
 	{
-		uint32_t i = DFT_CERO_U32;
+		int32_t i = DFT_CERO_U32;
 		Node* node = FIRST(list);
 
-		while((node) && (i < (pos-1))) //Mientras el valor este en la lista y no sea nulo
+		while((node != NULL) && (i < (pos-1))) //Mientras el valor este en la lista y no sea nulo
 		{
 			i++;
 			node = getNextNode(node);
 		}
 		
-		addNewNode(node, createNodeDeepCopy(data, function));		
+		addNewNode(createNodeDeepCopy(data, function), node);
+		increaseCounter(list);
 	}
 
-	increaseCounter(list);
+
 
 	return;
 }
@@ -188,7 +193,7 @@ void* popElem(LinkedList* list)
 }
 
 /* EXTRAE UN ELEMENTO EN LA POSICION INDICADA */
-void* popElemIndex(LinkedList* list, uint32_t posElem)
+void* popElemIndex(LinkedList* list, int32_t posElem)
 {
 	decreaseCounter(list);
 	uint32_t i = DFT_CERO_U32;
@@ -379,9 +384,11 @@ void* deepCopyUInt8Value(void* data)
 	uint8_t* value = (uint8_t*)malloc(sizeof(uint8_t));
 	*value = *(uint8_t *)data;
 
+#ifdef DEBUG_GRADO3
 	printf("deepCopyUInt8Value> valor a copiar: %d\n", *(uint8_t *)value);
+#endif
 
-	return value;
+	return (void *)value;
 }
 
 uint32_t getUInt32ArrayWithListElements(LinkedList* list, uint32_t* array)
@@ -401,22 +408,29 @@ uint32_t getUInt32ArrayWithListElements(LinkedList* list, uint32_t* array)
 
 uint8_t getUInt8ArrayWithListElements(LinkedList* list, uint8_t** array)
 {
+#ifdef DEBUG_GRADO3
 	printf("Total de elementos INFO(list): %d\n",*(uint8_t *)INFO(list));
+#endif
 	*array = (uint8_t*)malloc(*(uint8_t *)INFO(list)*sizeof(uint8_t));
 	if(!*array)
 		return 0xFF;
 
 	uint8_t* aux_array = *array;
 
+#ifdef DEBUG_GRADO3
 	printf("FIRST(list): %p, %d, %p\n",FIRST(list), *(uint8_t*)DATA(list), NEXT(list));
+#endif
 	uint8_t pos = 0;
-	for(Node* n = FIRST(list); n; n = NEXT(n), pos++)
+	for(Node* n = LAST(list); n; n = PREVIOUS(n), pos++)
 	{
+#ifdef DEBUG_GRADO3
 		printf("Valor de pos: %d\n",pos);
+#endif
 		*(aux_array + pos) = *(uint8_t*)DATA(n);
-		//*(*(array+pos)) = *(uint8_t*)DATA(n);
+#ifdef DEBUG_GRADO3
 		printf("Valor de DATA(n): %d\n",*(uint8_t*)DATA(n));
 		printf("Valor de *(array+pos): %d\n",*(aux_array+pos));
+#endif
 		
 	}
 

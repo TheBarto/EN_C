@@ -13,7 +13,9 @@ void push(Stack* stack, void* data)
 void pushDeepCopy(Stack* stack, void* data, userCopyFunction function)
 {
 
-	printf("pushDeepCopy > Valor a guardar: %d\n",*(uint32_t *)data);
+#ifdef DEBUG_GRADO3
+	printf("pushDeepCopy > Valor a guardar: %d\n",*(uint8_t *)data);
+#endif
 
 	appendElemDeepCopy(stack, data, function);
 }
@@ -58,11 +60,13 @@ uint8_t getUInt8ArrayWithStackElements(Stack* stack, uint8_t** array)
 
 	uint8_t total = getUInt8ArrayWithListElements(stack, array);
 
+#ifdef DEBUG_GRADO3
 	printf("getUInt8ArrayWithStackElements > El total de elementos es: %d\n",total);
 	for(int i = 0; i < total; i++)
 		printf("%d ", array[0][i]);
 
 	printf("\n");
+#endif
 
 	return total;
 }

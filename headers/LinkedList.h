@@ -3,7 +3,12 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <stdint.h>
 #include "defines.h"
+
+/*enum Types{UINT8 = 0,UINT16,UINT32,UINT64,INT8,INT16,INT32,INT64,CHAR,UCHAR,FLOAT,DOUBLE,LONGDOUBLE};
+
+typedef enum Types Types;*/
 
 struct Node
 {
@@ -57,11 +62,11 @@ void freeDeepCopyNodeLinkedList(Node* node);
 
 LinkedList* createLinkedList();
 void appendElem(LinkedList* list, void* data);
-void appendElemIndex(LinkedList* list, void* data, uint32_t pos);
+void appendElemIndex(LinkedList* list, void* data, int32_t pos);
 void appendElemDeepCopy(LinkedList* list, void* data, userCopyFunction function);
-void appendElemIndexDeepCopy(LinkedList* list, void* data, uint32_t pos, userCopyFunction function);
+void appendElemIndexDeepCopy(LinkedList* list, void* data, int32_t pos, userCopyFunction function);
 void* popElem(LinkedList* list);
-void* popElemIndex(LinkedList* list, uint32_t posElem);
+void* popElemIndex(LinkedList* list, int32_t posElem);
 bool isEmpty(LinkedList* list);
 void* getLinkedListElem(LinkedList* list, uint32_t position);
 void swapLinkedListNodes(LinkedList* list, uint32_t swapPosition1, uint32_t swapPosition2);
