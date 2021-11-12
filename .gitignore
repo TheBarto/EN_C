@@ -56,6 +56,6 @@ capturaBasica.c
 pruebaLectura.txt
 pruebas/*
 oldStuff/*
-comun.h
+comun1.h
 defines1.h
-tipos.h
+tipos1.h
