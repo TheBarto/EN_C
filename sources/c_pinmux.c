@@ -15,8 +15,6 @@
 //#include <syslog.h>
 
 #include "../headers/c_pinmux.h"
-#include "../headers/comun.h"
-
 
 uint8_t set_pin_mode(const char *key, const char *mode)
 {

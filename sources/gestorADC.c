@@ -6,7 +6,6 @@
  */
 
 #include "../headers/gestorADC.h"
-#include "../headers/comun.h"
 
 uint8_t obtener_numero_ADC(const char* nombre, uint8_t* adc)
 {

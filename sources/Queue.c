@@ -37,10 +37,12 @@ Queue* duplicateDeepCopyQueue(Queue* queue, userCopyFunction function)
 
 void deleteQueue(Queue* queue)
 {
-	return deleteLinkedList(queue);
+	deleteLinkedList(queue);
+	return;
 }
 
 void deleteDeepCopyQueue(Queue* queue)
 {
-	return deleteDeepCopyLinkedList(queue);
+	deleteDeepCopyLinkedList(queue);
+	return;
 }

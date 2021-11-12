@@ -42,12 +42,14 @@ Stack* duplicateDeepCopyStack(Stack* stack, userCopyFunction function)
 
 void deleteStack(Stack* stack)
 {
-	return deleteLinkedList(stack);
+	deleteLinkedList(stack);
+	return;
 }
 
 void deleteDeepCopyStack(Stack* stack)
 {
-	return deleteDeepCopyLinkedList(stack);
+	deleteDeepCopyLinkedList(stack);
+	return;
 }
 
 uint32_t getUInt32ArrayWithStackElements(Stack* stack, uint32_t* array)

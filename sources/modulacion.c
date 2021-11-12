@@ -314,7 +314,7 @@ void captura_secuencia_odorantes_completa_puro(void* capt, struct Configuracion*
 	float resistencia_interna=((P_CONF_VCC(config)*P_CONF_RESISTENCIA(config))/(value/1000.))-P_CONF_RESISTENCIA(config);
 
 #ifdef DEBUG_MODE
-	printf("Resistencia interna: %d\n",resistencia_interna);
+	printf("Resistencia interna: %f\n",resistencia_interna);
 #endif
 
 	//printf con los datos
@@ -322,7 +322,7 @@ void captura_secuencia_odorantes_completa_puro(void* capt, struct Configuracion*
 			(tm_struct->tm_year+1900), (tm_struct->tm_mon+1), tm_struct->tm_mday,
 			tm_struct->tm_hour, tm_struct->tm_min, tm_struct->tm_sec);
 
-	usleep(P_CONF_FREC_CAPTURA_SAMPLES(config) - (time(NULL)-seconds_ini));
+	sleep(P_CONF_FREC_CAPTURA_SAMPLES(config) - (time(NULL)-seconds_ini));
 
 	return;
 }
@@ -335,24 +335,24 @@ void captura_secuencias_completas_puro(struct Captura* captura, struct Configura
 {
 
 	uint16_t nMuestras = 0;
-	char nombreFichero[500];
+	char nombreFichero[1500];
 
 	time_t tm = time(NULL);
 	struct tm* tm_struct = localtime(&tm);
 
-	sprintf(nombreFichero, "%s/%s-%d_%d_%d-%d_%d_%d.dat%c",P_CAPT_PATH(captura), P_CAPT_FILE_ROOT(captura),
+	sprintf(&nombreFichero[0], "%s/%s-%d_%d_%d-%d_%d_%d.dat%c",P_CAPT_PATH(captura), P_CAPT_FILE_ROOT(captura),
 			tm_struct->tm_year+1900, tm_struct->tm_mon+1, tm_struct->tm_mday, tm_struct->tm_hour,
 			tm_struct->tm_min, tm_struct->tm_sec, 0);
 
 	FILE* file = fopen(nombreFichero, "w");
 
 #ifdef DEBUG_GRADO1
-	printf("%s\n", nombreFichero);
+	printf("nombre fichero:) %s\n", nombreFichero);
 #endif
 
 	if(!file)
 	{
-		printf("Fallo al abrir el fichero %s, finalizamos la ejecucion\n", nombreFichero);
+		printf("Fallo al abrir el fichero %s, finalizamos la ejecucion:)\n", nombreFichero);
 		return;
 	}
 

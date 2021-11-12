@@ -16,7 +16,7 @@ void aperturaFichero(const char* nombre, char* data) {
 		printf("Hubo un problema al leer y no se pudo continuar la ejecucion\n");
 	}
 
-	//Leemos los datos, y si no hay un salto de linea, lo añadimos
+	//Leemos los datos, y si no hay un salto de linea, lo aï¿½adimos
 	uint8_t leido = fread(&data[0], 1, TOTAL_DATA_READED_FILE, file);
 	if ((data[leido - 1] != '\n') && (leido < TOTAL_DATA_READED_FILE - 1)) {
 		data[leido] = '\n';
@@ -351,9 +351,13 @@ uint8_t obtenerSecuenciaCapturaDelFichero(const char* data,
 					orden_valvulas[pos_orden_valvulas] = 0;
 				} else if ((posicionLinea == POSICION_RAIZ_NOMBRE_FICHERO)
 						|| (posicionLinea == POSICION_NOMBRE_CARPETA)) {
+					//Lo incluyo para evitar el puÃ±etero \r\n de windows.
+					if(byte != '\r')
+					{
 					nombre[pos_nombre] = byte;
 					pos_nombre++;
 					nombre[pos_nombre] = 0;
+					}
 #ifdef DEBUG_GRADO1
 					printf("Valor de nombre en %d: %s\n", posicionLinea, nombre);
 #endif
@@ -507,8 +511,8 @@ uint8_t procesarCadenaAperturaValvulasOld(uint8_t* cadenaApertura,
 
 	printf("procesarCadenaAperturaValvulas > El total de elementos es: %d\n",
 			*total_dstArray);
-	for (int i = 0; i < *total_dstArray; i++)
-		printf("%d ", *(dstArray + i));
+	/*for (int i = 0; i < *total_dstArray; i++)
+		printf("%d ", *(dstArray + i));*/
 
 	printf("\n");
 
@@ -713,7 +717,7 @@ uint8_t procesarInformacion(uint32_t* valor, uint8_t posicionLinea,
 void procesarUltimoElementoPila(Stack* stack, uint32_t valor) {
 
 #ifdef DEBUG_GRADO1
-	printf("procesarUltimoElementoPila > nº repeticiones: %d\n", valor);
+	printf("procesarUltimoElementoPila > nï¿½ repeticiones: %d\n", valor);
 #endif
 	uint32_t valorPop = *(uint32_t *) pop(stack);
 

@@ -3,7 +3,7 @@
  *
  *      Codigo copiado de https://github.com/adafruit/adafruit-beaglebone-io-python/blob/master/source/event_gpio.c. No realizado por mi.
  *
- *      Realizado pequeños cambios en defines y variables para adaptarlo a mis constantes. Hay funciones que no van en windows y las
+ *      Realizado pequeï¿½os cambios en defines y variables para adaptarlo a mis constantes. Hay funciones que no van en windows y las
  *      he comentado.
  */
 /*
@@ -52,7 +52,6 @@ SOFTWARE.
 
 
 #include "../headers/event_gpio.h"
-#include "../headers/comun.h"
 
 #define GPIO_NOT_EXPORTED 0
 #define GPIO_EXPORTED 1
@@ -895,7 +894,7 @@ int add_edge_detect(unsigned int gpio, unsigned int edge)
 	// start poll thread if it is not already running
 	if (!thread_running)
 	{
-		if (pthread_create(&threads, NULL, poll_thread, (void *)t) != 0)
+		//if (pthread_create(&threads, NULL, poll_thread, (void *)t) != 0)
 		{
 #ifdef __unix__
 			syslog(LOG_ERR, "Adafruit_BBIO: add_edge_detect(): pthread_create() error %i-%s", errno, strerror(errno));

@@ -41,7 +41,6 @@ SOFTWARE.
 #include <unistd.h>
 
 #include "../headers/c_pwm.h"
-#include "../headers/comun.h"
 
 #ifdef BBBVERSION41
 #include "../headers/c_pinmux.h"
@@ -576,12 +575,13 @@ BBIO_err pwm_setup(const char *key, __attribute__ ((unused)) float duty, __attri
     snprintf(duty_path, sizeof(duty_path), "%s/duty_cycle", pwm_path);
     snprintf(enable_path, sizeof(enable_path), "%s/enable", pwm_path);
 #else
+    /*Puesto 150 de tamanio en vez de 100 para quitar un aviso.*/
     char fragment[100];
     char pwm_fragment[100];
     char pwm_path[100];
     char duty_path[200];
-    char period_path[100];
-    char polarity_path[100];
+    char period_path[150];
+    char polarity_path[150];
     int period_fd, duty_fd, polarity_fd;
 
     if (!pwm_initialized) {
@@ -782,7 +782,6 @@ BBIO_err pwm_start(const char *key, float duty, float freq, int polarity)
     err = pwm_set_frequency(key, freq);
     if (err != OK) {
 #ifdef __unix__
-    }
         syslog(LOG_ERR, "Adafruit_BBIO: pwm_start: %s couldn't set duty frequency: %i", key, err);
 #endif
         return err;

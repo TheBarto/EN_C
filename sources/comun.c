@@ -7,7 +7,6 @@
 
 #include "../headers/comun.h"
 
-uint8_t configuracion_modulo = 0;
 uint8_t error_conf = 0;
 
 // Tabla con todos los pines de las BB.
@@ -203,9 +202,7 @@ pins_t table[TOTAL_PINES] = {
   { NULL, NULL, 0, 0, 0 }
 };
 
-char ctrl_dir[CTRL_DIR_MAX];
-char ocp_dir[OCP_DIR_MAX];
-uint8_t direccion_GPIO[120];
+
 
 BBIO_err load_device_tree(const char *name)
 {

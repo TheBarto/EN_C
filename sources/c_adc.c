@@ -18,14 +18,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <sys/types.h>
-#include <string.h>
-#include <fcntl.h>
-#include <unistd.h>
+
 #include "../headers/c_adc.h"
-#include "../headers/comun.h"
 
 #ifdef BBBVERSION41
     char adc_prefix_dir[49];

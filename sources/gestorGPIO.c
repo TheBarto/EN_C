@@ -7,7 +7,7 @@
 
 #include "../headers/gestorGPIO.h"
 
-static uint8_t inicializar_modulo()
+uint8_t inicializar_modulo()
 {
 
 	for(uint8_t i = 0; i < 120; i++)
