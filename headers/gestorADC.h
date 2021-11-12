@@ -8,8 +8,8 @@
 #ifndef HEADERS_GESTORADC_H_
 #define HEADERS_GESTORADC_H_
 
-#include "../headers/comun.h"
-#include "../headers/c_adc.h"
+#include "comun.h"
+#include "c_adc.h"
 
 
 uint8_t obtener_numero_ADC(const char* nombre, uint8_t* adc);

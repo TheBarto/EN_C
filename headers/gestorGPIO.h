@@ -5,9 +5,9 @@
  *      Author: afuenteo
  */
 
-#include "../headers/comun.h"
-#include "../headers/event_gpio.h"
-#include "../headers/c_pinmux.h"
+#include "comun.h"
+#include "event_gpio.h"
+#include "c_pinmux.h"
 
 #ifndef HEADERS_GESTORGPIO_H_
 #define HEADERS_GESTORGPIO_H_
@@ -16,6 +16,7 @@
 #define PULL_UP_DOWN_DEFECTO	((uint8_t) PUD_OFF)
 #define INICIAL_DEFECTO			((uint8_t) 0)
 
+uint8_t inicializar_modulo();
 
 uint8_t obtener_numero_gpio(const char* nombre, uint16_t* gpio);
 

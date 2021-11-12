@@ -23,7 +23,14 @@ SOFTWARE.
 
 #ifndef BBIO_C_ADC_H
 #define BBIO_C_ADC_H
-#include "../headers/comun.h"
+
+#include "comun.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <sys/types.h>
+#include <string.h>
+#include <fcntl.h>
+#include <unistd.h>
 
 extern int adc_initialized;
 

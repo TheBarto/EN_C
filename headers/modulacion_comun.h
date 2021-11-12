@@ -15,6 +15,9 @@
 #include <sys/stat.h>
 
 //#include "comun.h"
+#include "gestorGPIO.h"
+#include "gestorADC.h"
+#include "gestorPWM.h"
 
 #define DEBUG_MODE
 

@@ -27,7 +27,7 @@ SOFTWARE.
 #ifndef C_PWM_H_
 #define C_PWM_H_
 
-#include "../headers/comun.h"
+#include "comun.h"
 
 BBIO_err initialize_pwm(void);
 BBIO_err pwm_start(const char *key, float duty, float freq, int polarity);

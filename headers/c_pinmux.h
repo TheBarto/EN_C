@@ -28,7 +28,7 @@ SOFTWARE.
 #ifndef C_PINMUX_H
 #define C_PINMUX_H
 
-#include "../headers/comun.h"
+#include "comun.h"
 
 uint8_t set_pin_mode(const char *key, const char *mode);
 

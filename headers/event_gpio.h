@@ -37,7 +37,7 @@ SOFTWARE.
 #define EVENT_GPIO_H
 
 //#include "adafruit/bbio/error.h"
-#include "../headers/comun.h"
+#include "comun.h"
 
 #define NO_EDGE      ((uint8_t) 0)
 #define RISING_EDGE  ((uint8_t) 1)

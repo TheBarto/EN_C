@@ -7,12 +7,14 @@
 #ifdef __unix__
 #include <glob.h>
 #include <unistd.h>
+#include <syslog.h>
 #else
 #include <windows.h>
 #endif
 #include <string.h>
-//#include <time.h>
+#include <time.h>
 #include <errno.h>
+
 
 
 #define OK ((uint8_t) 0)
@@ -34,13 +36,14 @@ typedef uint8_t BBIO_err;
 
 
 //#define ERROR				((uint8_t) 1)
-extern uint8_t configuracion_modulo;
+
 extern uint8_t modulo_GPIO;
 extern uint8_t error_conf;
-extern uint8_t direccion_GPIO[120];
 
-extern char ctrl_dir[CTRL_DIR_MAX];
-extern char ocp_dir[OCP_DIR_MAX];
+uint8_t configuracion_modulo;
+uint8_t direccion_GPIO[120];
+char ctrl_dir[CTRL_DIR_MAX];
+char ocp_dir[OCP_DIR_MAX];
 
 typedef struct pins_t
 {
