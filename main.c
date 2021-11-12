@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "headers/moduloLecturaFicheros.h"
+#include "headers/modulacion_comun.h"
 
 //#define BUSCADORES
 
@@ -146,7 +147,7 @@ int main(int arc, char* argv[])
 	printf("Tendencia: %d\n", pcaptura->valoresCapturaExtra[0]);
 	printf("HeatSensor: %d\n", pcaptura->valoresCapturaExtra[1]);
 
-	printf("\n\nComenzamos captura de prueba\n\n");
+	printf("\n\nComenzamos captura de prueba :)\n\n");
 
 	captura_secuencias_completas_puro(&captura, &conf);
 
