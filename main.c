@@ -90,7 +90,7 @@ int main(int arc, char* argv[])
 	//Pruebas de la lectura de ficheros
 
 	char name1[20] = "pruebaConf.txt";// "pruebaLectura.txt";
-	char name2[30] = "pruebaLecturaPuro.txt";
+	char name2[30] = "pruebaLecturaPuroPruebas.txt";
 	//uint8_t modulacion = 0; //MPURO;
 	struct Captura captura;
 	struct Configuracion conf;
@@ -140,12 +140,15 @@ int main(int arc, char* argv[])
 
 	printf("TOTAL VALVULAS: %d\n", P_CAPT_TOTAL_VALVULAS(pcaptura));
 	
-	for(int i = 0; i < P_CAPT_TOTAL_VALVULAS(pcaptura); i++)
-		printf("%d - ", P_CAPT_ORDEN_VALVULAS(pcaptura)[i]);
-	printf("\n");
+	if(P_CAPT_TOTAL_VALVULAS(pcaptura) != 0xFF)
+	{
+		for(int i = 0; i < P_CAPT_TOTAL_VALVULAS(pcaptura); i++)
+			printf("%d - ", P_CAPT_ORDEN_VALVULAS(pcaptura)[i]);
+		printf("\n");
+	}
 
 	printf("Tendencia: %d\n", pcaptura->valoresCapturaExtra[0]);
-	printf("HeatSensor: %d\n", pcaptura->valoresCapturaExtra[1]);
+	//printf("HeatSensor: %d\n", pcaptura->valoresCapturaExtra[1]);
 
 	printf("\n\nComenzamos captura de prueba :)\n\n");
 
