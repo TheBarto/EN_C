@@ -1,5 +1,8 @@
 #include "../headers/moduloLecturaFicheros.h"
 
+#define DEBUG_GRADO1
+#define DEBUG_GRADO2
+
 //Inicializamos la variable global con el inicio de linea. Esto se hace así por lo visto
 char cabeceraLinea[20] = { "EN_CAPTURE:" };
 char cabeceraConf[20] = { "EN_CONFIG:" };
@@ -284,17 +287,22 @@ uint8_t obtenerSecuenciaCapturaDelFichero(const char* data,
 #endif
 
 				if (posicionLinea == POSICION_ORDEN_VALVULAS) {
-					procesarCadenaAperturaValvulas(orden_valvulas,
-							&P_CAPT_ORDEN_VALVULAS(captura), &P_CAPT_TOTAL_VALVULAS(captura),
-							pos_orden_valvulas);
-
+					if(P_CAPT_TOTAL_VALVULAS(captura) != 0xFF)
+					{
+						procesarCadenaAperturaValvulas(orden_valvulas,
+								&P_CAPT_ORDEN_VALVULAS(captura), &P_CAPT_TOTAL_VALVULAS(captura),
+								pos_orden_valvulas);
+					}
 #ifdef DEBUG_GRADO2
-					printf("obtenerSecuenciaCapturaDelFichero > TOTAL VALVULAS: %d\n",
-							P_CAPT_TOTAL_VALVULAS(captura));
+					if(P_CAPT_TOTAL_VALVULAS(captura) != 0xFF)
+					{
+						printf("obtenerSecuenciaCapturaDelFichero > TOTAL VALVULAS: %d\n",
+								P_CAPT_TOTAL_VALVULAS(captura));
 
-					for (int i = 0; i < P_CAPT_TOTAL_VALVULAS(captura); i++)
-						printf("%d - ", P_CAPT_ORDEN_VALVULAS(captura)[i]);
-					printf("\n");
+						for (int i = 0; i < P_CAPT_TOTAL_VALVULAS(captura); i++)
+							printf("%d - ", P_CAPT_ORDEN_VALVULAS(captura)[i]);
+						printf("\n");
+					}
 #endif
 				} else {
 					if ((posicionLinea == POSICION_RAIZ_NOMBRE_FICHERO)
@@ -343,7 +351,37 @@ uint8_t obtenerSecuenciaCapturaDelFichero(const char* data,
 
 				break;
 			}
-
+			case '*':
+			/* El caso de valor infinito que sea solamente 
+			 * para el tiempo de analisis del odorantes */
+			if((posicionLinea == POSICION_DURACION_ODORANTE) &&
+				(data[(*totalDatosLeidos)+1] == ','))
+			{
+				printf("atoi *: %d\n",byte);
+				valor = 0xFF;
+			}
+			else
+			{
+				return E_MAL_FORMADO;
+			}
+			break;
+			/* El caso de valor nulo, que indica que no hay ningun 
+			elemento y que se debe de ignorar cuando se ejecute*/
+			case '_':
+				if(((posicionLinea == POSICION_ORDEN_VALVULAS) ||
+					(posicionLinea == POSICION_SUCCION)) &&
+					(data[(*totalDatosLeidos)+1] == ','))
+				{
+					printf("atoi _: %d\n",byte);
+					valor = byte;
+					if(posicionLinea == POSICION_ORDEN_VALVULAS)
+						P_CAPT_TOTAL_VALVULAS(captura) = 0xFF;
+				}
+				else
+				{
+					return E_MAL_FORMADO;
+				}
+			break;
 			default: {
 				if (posicionLinea == POSICION_ORDEN_VALVULAS) {
 					orden_valvulas[pos_orden_valvulas] = byte;
@@ -354,9 +392,9 @@ uint8_t obtenerSecuenciaCapturaDelFichero(const char* data,
 					//Lo incluyo para evitar el puñetero \r\n de windows.
 					if(byte != '\r')
 					{
-					nombre[pos_nombre] = byte;
-					pos_nombre++;
-					nombre[pos_nombre] = 0;
+						nombre[pos_nombre] = byte;
+						pos_nombre++;
+						nombre[pos_nombre] = 0;
 					}
 #ifdef DEBUG_GRADO1
 					printf("Valor de nombre en %d: %s\n", posicionLinea, nombre);

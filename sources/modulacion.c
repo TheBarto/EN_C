@@ -233,7 +233,7 @@ void inicializar_fichero_puertos(uint8_t* succion, uint8_t* pinMotor, char* path
 	printf("Path: %s\n", path);
 #else
 	//PWM.
-	iniciar_puerto_PWM(pinMotor, *succion, FRECUENCIA_DEFECTO, POLARIDAD_DEFECTO);
+	iniciar_puerto_PWM((const char *)pinMotor, *succion, FRECUENCIA_DEFECTO, POLARIDAD_DEFECTO);
 #endif
 
 	// Comprobamos que el directorio existe, y lo creamos en caso contrario
@@ -293,7 +293,7 @@ void captura_secuencia_odorantes_completa_puro(void* capt, struct Configuracion*
 	float tempTH = 0;
 	float humTH = 0;
 	float timeUSleep = (P_CONF_FREC_SUB_SAMPLES(config) / P_CONF_SUB_SAMPLES(config));
-	float value = 20.0;
+	float value = 0;
 
 	time_t seconds_ini = time(NULL);
 	struct tm* tm_struct = localtime(&seconds_ini);
@@ -301,7 +301,8 @@ void captura_secuencia_odorantes_completa_puro(void* capt, struct Configuracion*
 	for(uint8_t i = 0; i < P_CONF_SUB_SAMPLES(config); i++)
 	{
 #ifdef DEBUG_MODE
-		//printf("Hacemos una lectura - %d del ADC\n",i);
+		value = 20.0;
+		//printf("Hacemos una lectura - %f del ADC\n",i);
 #else
 		//ADC.
 		value += (leer_valor_ADC(P_CONF_SENSOR_READ_PIN(config))*1800);
@@ -356,23 +357,49 @@ void captura_secuencias_completas_puro(struct Captura* captura, struct Configura
 		return;
 	}
 
-	for(int i = 0; i < P_CAPT_TOTAL_VALVULAS(captura); i++)
+	/* Con esto inicializamos el puerto PWM del motor*/
+#ifdef DEBUG_MODE
+	printf("Activo PWM del motor\n");
+#else
+	//PWM.
+	if(P_CAPT_SUCCION(captura) != 0xFF)
+		iniciar_puerto_PWM((const char *)P_CONF_MOTOR_CTRL_PIN(config), P_CAPT_SUCCION(captura), FRECUENCIA_DEFECTO, POLARIDAD_DEFECTO);
+#endif
+
+#ifdef DEBUG_MODE
+	printf("Activo PWM de la temperatura del sensor\n");
+#else
+	/* Inicializamos el puerto del sensor */
+	iniciar_puerto_PWM((const char *)P_CONF_SENSOR_HEAT_PIN(config), P_CAPT_TEMPERATURA_SENSOR(captura), FRECUENCIA_DEFECTO, POLARIDAD_DEFECTO);
+#endif
+
+	int i = 0;
+	//void inicializar_fichero_puertos(uint8_t* succion, uint8_t* pinMotor, char* path, FILE* f)
+	while((i < P_CAPT_TOTAL_VALVULAS(captura)) || 
+		(P_CAPT_TOTAL_VALVULAS(captura) == 0xFF))
 	{
-		abrir_electrovalvula(P_CONF_ELECTROVALVULAS(config),
-				P_CAPT_ORDEN_VALVULAS(captura)[i]);
+		if(P_CAPT_TOTAL_VALVULAS(captura) != 0xFF)
+			abrir_electrovalvula(P_CONF_ELECTROVALVULAS(config),
+					P_CAPT_ORDEN_VALVULAS(captura)[i]);
 
 #ifdef DEBUG_GRADO1
 		printf("captura_secuencia_odorantes_completa_puro. TOTALVALVULAS(captura): %d\n",P_CAPT_TOTAL_VALVULAS(captura));
 #endif
 
-		for(int j = 0; j < P_CAPT_TIEMPO_ANALISIS_ODOR(captura); j++)
+		int j = 0;
+		while((j < P_CAPT_TIEMPO_ANALISIS_ODOR(captura)) || 
+			(P_CAPT_TIEMPO_ANALISIS_ODOR(captura) == 0xFF))
 		{
 			P_CAPT_FUNCION(captura)(captura, config, file, nMuestras);
 			nMuestras++;
+			j++;
 		}
 
-		cerrar_electrovalvulas(P_CONF_ELECTROVALVULAS(config),
-				P_CONF_TOTAL_VALS(config));
+		if(P_CAPT_TOTAL_VALVULAS(captura) != 0xFF)
+			cerrar_electrovalvulas(P_CONF_ELECTROVALVULAS(config),
+					P_CONF_TOTAL_VALS(config));
+
+		i++;
 	}
 
 	cierreDescriptoresAbiertos(config, file);
@@ -420,8 +447,8 @@ void cierreDescriptoresAbiertos(struct Configuracion* conf, FILE* file)
 		printf("Limpio PWM\n");
 #else
 		//PWM.
-		parar_puerto_PWM(P_CONF_MOTOR_CTRL_PIN(conf));
-		parar_puerto_PWM(P_CONF_SENSOR_HEAT_PIN(conf));
+		parar_puerto_PWM((const char *)P_CONF_MOTOR_CTRL_PIN(conf));
+		parar_puerto_PWM((const char *)P_CONF_SENSOR_HEAT_PIN(conf));
 		//PWM.cleanup()
 #endif
 	}
@@ -440,7 +467,7 @@ void abrir_electrovalvula(uint8_t p_electrovalvulas[MAX_ELECTROVALVULAS][MAX_TAM
 	printf("Abrimos la valvula: %s\n", p_electrovalvulas[electrovalvula]);
 #else
 	//GPIO.
-	salida_GPIO(p_electrovalvulas[electrovalvula], HIGH);
+	salida_GPIO((const char *)p_electrovalvulas[electrovalvula], HIGH);
 #endif
 }
 
@@ -456,7 +483,7 @@ void cerrar_electrovalvulas(uint8_t p_electrovalvulas[MAX_ELECTROVALVULAS][MAX_T
 			printf("Cerramos la valvula: %s\n", p_electrovalvulas[i]);
 #else
 			//GPIO.
-			salida_GPIO(p_electrovalvulas[i], LOW);
+			salida_GPIO((const char *)p_electrovalvulas[i], LOW);
 #endif
 		}
 	}
@@ -472,7 +499,7 @@ void activar_puertos_GPIO(uint8_t** GPIOs, uint8_t* total_GPIOs)
 #else
 	//GPIO.
 	for(uint8_t i = 0; i < *total_GPIOs; i++)
-		iniciar_GPIO(*(GPIOs+i), OUTPUT, PULL_UP_DOWN_DEFECTO, RETRASO_GPIO_DEFECTO, INICIAL_DEFECTO);
+		iniciar_GPIO((const char *)*(GPIOs+i), OUTPUT, PULL_UP_DOWN_DEFECTO, RETRASO_GPIO_DEFECTO, INICIAL_DEFECTO);
 
 #endif
 }

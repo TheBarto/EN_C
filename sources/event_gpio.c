@@ -461,26 +461,6 @@ BBIO_err gpio_set_value(unsigned int gpio, unsigned int value)
 	char filename[MAX_FILENAME];
 	char vstr[10];
 
-	// TODO: remove this debug output created for issue #178
-	/*
-    if(uboot_overlay_enabled()) {
-      fprintf(stderr, "gpio_set_value: uboot_overlay_enabled() is true\n");
-    } else {
-      fprintf(stderr, "gpio_set_value: uboot_overlay_enabled() is FASLE\n");
-    }
-    if(pocketbeagle()) {
-      fprintf(stderr, "gpio_set_value: pocketbeagle() is true\n");
-    } else {
-      fprintf(stderr, "gpio_set_value: pocketbeagle() is FASLE\n");
-    }
-    if(beaglebone_blue()) {
-      fprintf(stderr, "gpio_set_value: beaglebone_blue() is true\n");
-    } else {
-      fprintf(stderr, "gpio_set_value: beaglebone_blue() is FALSE\n");
-    }
-	 */
-
-
 	if ((gpio >= USR_LED_GPIO_MIN) && (gpio <=  USR_LED_GPIO_MAX)) {
 
 		char *usr_led_trigger[] = { "heartbeat", "mmc0", "cpu0", "mmc1" };
@@ -894,7 +874,7 @@ int add_edge_detect(unsigned int gpio, unsigned int edge)
 	// start poll thread if it is not already running
 	if (!thread_running)
 	{
-		//if (pthread_create(&threads, NULL, poll_thread, (void *)t) != 0)
+		if (pthread_create(&threads, NULL, poll_thread, (void *)t) != 0)
 		{
 #ifdef __unix__
 			syslog(LOG_ERR, "Adafruit_BBIO: add_edge_detect(): pthread_create() error %i-%s", errno, strerror(errno));
