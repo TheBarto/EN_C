@@ -1,7 +1,7 @@
 #include "../headers/moduloLecturaFicheros.h"
 
-#define DEBUG_GRADO1
-#define DEBUG_GRADO2
+//#define DEBUG_GRADO1
+//#define DEBUG_GRADO2
 
 //Inicializamos la variable global con el inicio de linea. Esto se hace así por lo visto
 char cabeceraLinea[20] = { "EN_CAPTURE:" };
@@ -256,7 +256,12 @@ uint8_t obtenerSecuenciaCapturaDelFichero(const char* data,
 #ifdef DEBUG_GRADO2
 	printf("byte leido: %c\n", byte);
 #endif
-	while ((byte != 0) && (byte != VALOR_SALTO_LINEA)) {
+
+	/* Vamos a parar el bucle cuando el cuando hayamos leido
+	 * el fin de archivo o cuando hayamos leido una linea de datos.
+	 * Si leemos una linea de datos, ponemos un 0 en la variable
+	 * de lectura.*/
+	while (byte != 0) {
 		if(lineaEncontrada == 0)
 		{
 			if ((cabeceraLinea[posCab] == byte)) {
@@ -373,7 +378,7 @@ uint8_t obtenerSecuenciaCapturaDelFichero(const char* data,
 					(data[(*totalDatosLeidos)+1] == ','))
 				{
 					printf("atoi _: %d\n",byte);
-					valor = byte;
+					valor = 0xFF;
 					if(posicionLinea == POSICION_ORDEN_VALVULAS)
 						P_CAPT_TOTAL_VALVULAS(captura) = 0xFF;
 				}
@@ -404,7 +409,8 @@ uint8_t obtenerSecuenciaCapturaDelFichero(const char* data,
 						byte -= VALOR_NUMERO_0;
 						valor *= 10;
 						valor += byte;
-					} else {
+						//Para el caso de que sea un salto de linea,
+					} else if(byte != 0x0A){
 						return E_MAL_FORMADO;
 					}
 				}
@@ -415,6 +421,13 @@ uint8_t obtenerSecuenciaCapturaDelFichero(const char* data,
 
 		(*totalDatosLeidos)++;
 		byte = data[*totalDatosLeidos];
+		/* Si hemos encontrado un salto de linea y hemos
+		 * encontrado una linea de datos, salimos del bucle.*/
+		if((byte == 10) &&
+				(lineaEncontrada == 1))
+		{
+			byte = 0;
+		}
 #ifdef DEBUG_GRADO2
 		printf("byte leido: %c\n", byte);
 #endif
@@ -438,10 +451,12 @@ uint8_t obtenerSecuenciaCapturaDelFichero(const char* data,
 	 * la siguiente vez que leamos los datos*/
 	(*totalDatosLeidos)++;
 
-	if (/*(byte == 10) && */(byte == 0)) {
+	/*
+	if (byte == 0) {
 		free(captura);
 		captura = NULL;
 	}
+	*/
 
 	//deleteDeepCopyStack(stack);
 	return SALIDA_OK;
@@ -839,10 +854,11 @@ uint8_t obtenerSecuenciaConfiguracion(const char* data,
 	uint8_t pos_read = 0;
 
 	byte = data[*totalDatosLeidos];
+
 #ifdef DEBUG_GRADO2
 	printf("byte leido: %c\n", byte);
 #endif
-	while ((byte != 0) && (byte != VALOR_SALTO_LINEA)) {
+	while (byte != 0) {
 		if ((cabeceraConf[posCab] == byte) && (lineaEncontrada == 0)) {
 			posCab++;
 			if (cabeceraConf[posCab] == 0) {
@@ -924,8 +940,12 @@ uint8_t obtenerSecuenciaConfiguracion(const char* data,
 			default: {
 				if (((valor_leido == NUEVO) && (byte == 'P'))
 						|| (valor_leido == CADENA)) {
-					ptr_data[pos_read] = byte;
-					valor_leido = CADENA;
+					//Lo incluyo para evitar el puñetero \r\n de windows.
+					if(byte != '\r')
+					{
+						ptr_data[pos_read] = byte;
+						valor_leido = CADENA;
+					}
 				} else if (((valor_leido == NUEVO)
 						&& ((byte >= '0') && (byte <= '9')))
 						|| (valor_leido == NUMERO)) {
@@ -943,6 +963,18 @@ uint8_t obtenerSecuenciaConfiguracion(const char* data,
 
 		(*totalDatosLeidos)++;
 		byte = data[*totalDatosLeidos];
+		while(byte == 10)
+		{
+			if(lineaEncontrada == 1)
+			{
+				byte = 0;
+			}
+			else
+			{
+				(*totalDatosLeidos)++;
+				byte = data[*totalDatosLeidos];
+			}
+		}
 #ifdef DEBUG_GRADO2
 		printf("byte leido: %c\n", byte);
 #endif

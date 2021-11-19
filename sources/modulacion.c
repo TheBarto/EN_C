@@ -359,7 +359,10 @@ void captura_secuencias_completas_puro(struct Captura* captura, struct Configura
 
 	/* Con esto inicializamos el puerto PWM del motor*/
 #ifdef DEBUG_MODE
-	printf("Activo PWM del motor\n");
+	if(P_CAPT_SUCCION(captura) != 0xFF)
+		printf("Activo PWM del motor\n");
+	else
+		printf("No activo PWM del motor\n");
 #else
 	//PWM.
 	if(P_CAPT_SUCCION(captura) != 0xFF)
