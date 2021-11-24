@@ -86,6 +86,36 @@ struct pwm_exp *lookup_exported_pwm(const char *key)
     return NULL; /* standard for pointers */
 }
 
+BBIO_err get_pwm_by_key(const char* key, pwm_t** pwm)
+{
+
+	pwm_t* p = NULL;
+
+	for(p = &pwm_table[0]; p->key != NULL; p++)
+	{
+		char* pName = (char *)p->key;
+		char* pArg = (char *)key;
+
+		while((*pName != 0) && (*pArg == *pName))
+		{
+			pArg++;
+			pName++;
+		}
+
+		if(!*pName && !*pArg)
+		{
+			#ifdef DEBUG
+				printf("Encontrado algo con key :) %s\n",pPins->key);
+			#endif
+			*pwm = p;
+			return OK;
+		}
+	}
+
+
+	return E_ARG_INVALIDO;
+}
+
 // Export PWM to the list
 void export_pwm(struct pwm_exp *new_pwm)
 {

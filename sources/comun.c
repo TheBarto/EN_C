@@ -7,6 +7,8 @@
 
 #include "../headers/comun.h"
 
+
+
 uint8_t error_conf = 0;
 
 // Tabla con todos los pines de las BB.
@@ -202,7 +204,39 @@ pins_t table[TOTAL_PINES] = {
   { NULL, NULL, 0, 0, 0 }
 };
 
-
+/* Copiar la tabla de pwms para acceder a ellos. */
+pwm_t pwm_table[TOTAL_PWM] = {
+  { "ehrpwm2", 6, 1, 4, "ehrpwm.2:1", "EHRPWM2B", "48304000", "48304200", "P8_13"},
+  { "ehrpwm2", 5, 0, 4, "ehrpwm.2:0", "EHRPWM2A", "48304000", "48304200", "P8_19"},
+  { "ehrpwm1", 4, 1, 2, "ehrpwm.1:1", "EHRPWM1B", "48302000", "48302200", "P8_34"},
+  { "ehrpwm1", 3, 0, 2, "ehrpwm.1:0", "EHRPWM1A", "48302000", "48302200", "P8_36"},
+  { "ehrpwm2", 5, 0, 3, "ehrpwm.2:0", "EHRPWM2A", "48304000", "48304200", "P8_45"},
+  { "ehrpwm2", 6, 1, 3, "ehrpwm.2:1", "EHRPWM2B", "48304000", "48304200", "P8_46"},
+  { "ehrpwm1", 3, 0, 6, "ehrpwm.1:0", "EHRPWM1A", "48302000", "48302200", "P9_14"},
+  { "ehrpwm1", 4, 1, 6, "ehrpwm.1:1", "EHRPWM1B", "48302000", "48302200", "P9_16"},
+  { "ehrpwm0", 1, 1, 3, "ehrpwm.0:1", "EHRPWM0B", "48300000", "48300200", "P9_21"},
+  { "ehrpwm0", 0, 0, 3, "ehrpwm.0:0", "EHRPWM0A", "48300000", "48300200", "P9_22"},
+  {   "ecap2", 7, 0, 4, "ecap.2",     "ECAPPWM2", "48304000", "48304100", "P9_28"},
+  { "ehrpwm0", 1, 1, 1, "ehrpwm.0:1", "EHRPWM0B", "48300000", "48300200", "P9_29"},
+  { "ehrpwm0", 0, 0, 1, "ehrpwm.0:0", "EHRPWM0A", "48300000", "48300200", "P9_31"},
+  {   "ecap0", 2, 0, 0, "ecap.0",     "ECAPPWM0", "48300000", "48300100", "P9_42"},
+  { "timer4", 0, 0, 2, "", "", "", "dmtimer-pwm-4", "P8_7" },
+  { "timer7", 0, 0, 2, "", "", "", "dmtimer-pwm-7", "P8_8" },
+  { "timer5", 0, 0, 2, "", "", "", "dmtimer-pwm-5", "P8_9" },
+  { "timer6", 0, 0, 2, "", "", "", "dmtimer-pwm-6", "P8_10" },
+  { "ehrpwm0", 0, 0, 1, "ehrpwm.0:0", "EHRPWM0A", "48300000", "48300200", "P1_8"},
+  { "ehrpwm0", 0, 0, 1, "ehrpwm.0:0", "EHRPWM0A", "48300000", "48300200", "P1_36"},
+  { "ehrpwm0", 1, 1, 1, "ehrpwm.0:1", "EHRPWM0B", "48300000", "48300200", "P1_10"},
+  { "ehrpwm0", 1, 1, 1, "ehrpwm.0:1", "EHRPWM0B", "48300000", "48300200", "P1_33"},
+  { "ehrpwm1", 3, 0, 6, "ehrpwm.1:0", "EHRPWM1A", "48302000", "48302200", "P2_1"},
+  { "ehrpwm2", 6, 1, 3, "ehrpwm.2:1", "EHRPWM2B", "48304000", "48304200", "P2_3"},
+  { "timer7", 0, 0, 4, "", "", "", "dmtimer-pwm-7", "P1_20" },
+  { "timer6", 0, 0, 1, "", "", "", "dmtimer-pwm-6", "P1_26" },
+  { "timer5", 0, 0, 1, "", "", "", "dmtimer-pwm-5", "P1_28" },
+  { "timer7", 0, 0, 5, "", "", "", "dmtimer-pwm-7", "P2_27" },
+  { "timer4", 0, 0, 2, "", "", "", "dmtimer-pwm-4", "P2_31" },
+  { NULL, 0, 0, 0, NULL, NULL, NULL, NULL, NULL }
+};
 
 BBIO_err load_device_tree(const char *name)
 {
@@ -463,4 +497,60 @@ int uboot_overlay_enabled(void) {
 #else
     return 0;
 #endif
+}
+
+int device_tree_loaded(const char *name)
+{
+    FILE *file = NULL;
+    char slots[100];
+#ifdef BBBVERSION41
+    snprintf(ctrl_dir, sizeof(ctrl_dir), "/sys/devices/platform/bone_capemgr");
+#else
+    build_path("/sys/devices", "bone_capemgr", ctrl_dir, sizeof(ctrl_dir));
+#endif
+    char line[256];
+
+    /* Check if the Linux kernel booted with u-boot overlays enabled.
+       If enabled, do not load overlays via slots file as the write
+       will hang due to kernel bug in cape manager driver. Return 1
+       to fake the device tree is loaded to avoid cape manager bug */
+    if(uboot_overlay_enabled()) {
+      return 1;
+    }
+
+    /* beaglebone blue has complete dtb file and does not need overlays */
+    if(beaglebone_blue()) {
+      //fprintf(stderr, "common.c: device_tree_loaded(): beaglebone_blue(): TRUE\n");
+      return OK;
+    }
+
+    /* pocketbeagle has complete dtb file and does not need overlays */
+    if(pocketbeagle()) {
+      //fprintf(stderr, "common.c: device_tree_loaded(): pocketbeagle(): TRUE\n");
+      return OK;
+    }
+
+    snprintf(slots, sizeof(slots), "%s/slots", ctrl_dir);
+
+
+    file = fopen(slots, "r+");
+    if (!file) {
+#ifdef NO_PYTHON
+        PyErr_SetFromErrnoWithFilename(PyExc_IOError, slots);
+#endif // !NO_PYTHON
+        return -1;
+    }
+
+    while (fgets(line, sizeof(line), file)) {
+        //the device is loaded, close file and return true
+        if (strstr(line, name)) {
+            fclose(file);
+            return 1;
+        }
+    }
+
+    //not loaded, close file
+    fclose(file);
+
+    return 0;
 }
