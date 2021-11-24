@@ -14,13 +14,19 @@
 #include <string.h>
 #include <time.h>
 #include <errno.h>
+#include <linux/version.h>
 
-
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4,1,0)
+	#ifndef BBBVERSION41
+		#define BBBVERSION41
+	#endif
+#endif
 
 #define OK ((uint8_t) 0)
 #define CTRL_DIR_MAX ((uint8_t) 50)
 #define OCP_DIR_MAX  ((uint8_t) 50)
 #define TOTAL_PINES	((uint8_t) 189)
+#define TOTAL_PWM	((uint8_t) 30)
 
 #define ARRAY_SIZE(a)  (sizeof(a) / sizeof(a[0]))
 
@@ -68,6 +74,8 @@ typedef struct pwm_t {
   const char *key;  // Pin name eg P9_21
 } pwm_t;
 
+extern pwm_t pwm_table[TOTAL_PWM];
+
 int uboot_overlay_enabled(void);
 
 int beaglebone_blue(void);
@@ -76,5 +84,7 @@ int pocketbeagle(void);
 BBIO_err build_path(const char *partial_path, const char *prefix, char *full_path, size_t full_path_len);
 BBIO_err load_device_tree(const char *name);
 BBIO_err unload_device_tree(const char *name);
+
+int device_tree_loaded(const char* name);
 
 #endif

@@ -37,4 +37,6 @@ BBIO_err pwm_set_duty_cycle(const char *key, float duty);
 BBIO_err pwm_set_polarity(const char *key, int polarity);
 void pwm_cleanup(void);
 
+BBIO_err get_pwm_by_key(const char* key, pwm_t** pwm);
+
 #endif /* C_PWM_H_ */
