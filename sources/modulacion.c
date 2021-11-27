@@ -357,6 +357,14 @@ void captura_secuencias_completas_puro(struct Captura* captura, struct Configura
 		return;
 	}
 
+	/* Antes de hacer nada, comprobamos que no se quieran
+	 * abrir mas valvulas de las declaradas*/
+	if(P_CAPT_TOTAL_VALVULAS(captura) > P_CONF_TOTAL_VALS(config))
+	{
+		printf("Se quieren abrir más electrovalvulas de las declaradas\n");
+		return;
+	}
+
 	/* Con esto inicializamos el puerto PWM del motor*/
 #ifdef DEBUG_MODE
 	if(P_CAPT_SUCCION(captura) != 0xFF)
@@ -381,9 +389,25 @@ void captura_secuencias_completas_puro(struct Captura* captura, struct Configura
 	while((i < P_CAPT_TOTAL_VALVULAS(captura)) || 
 		(P_CAPT_TOTAL_VALVULAS(captura) == 0xFF))
 	{
+		/* Si existen electrovalvulas, comprobamos que la que se desee abrir
+		 * exista, y que si hay 3 valvulas (0, 1 y 2) no se quiera abrir la
+		 * numero 8.*/
 		if(P_CAPT_TOTAL_VALVULAS(captura) != 0xFF)
-			abrir_electrovalvula(P_CONF_ELECTROVALVULAS(config),
-					P_CAPT_ORDEN_VALVULAS(captura)[i]);
+		{
+			if(P_CAPT_ORDEN_VALVULAS(captura)[i] < P_CONF_TOTAL_VALS(config))
+			{
+				abrir_electrovalvula(P_CONF_ELECTROVALVULAS(config), P_CAPT_ORDEN_VALVULAS(captura)[i]);
+			}
+			else
+			{
+				printf("La valvula que quiere abrirse no está declarada.\n");
+				printf("Hay %d valvulas indicadas y se quiere abrir la numero %d\n",
+						P_CONF_TOTAL_VALS(config), P_CAPT_ORDEN_VALVULAS(captura)[i]);
+				cerrar_electrovalvulas(P_CONF_ELECTROVALVULAS(config), P_CONF_TOTAL_VALS(config));
+				return;
+			}
+		}
+
 
 #ifdef DEBUG_GRADO1
 		printf("captura_secuencia_odorantes_completa_puro. TOTALVALVULAS(captura): %d\n",P_CAPT_TOTAL_VALVULAS(captura));

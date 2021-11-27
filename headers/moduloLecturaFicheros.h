@@ -38,6 +38,7 @@
 #define ERROR	((uint8_t) 0xFF)
 #define E_MAL_FORMADO	((uint8_t) 1)
 #define E_VALORES_INCORRECTOS	((uint8_t) 2)
+#define FIN_FICHERO	((uint8_t) 3)
 
 #define TOTAL_DATA_READED_FILE	((uint16_t) 5000)
 

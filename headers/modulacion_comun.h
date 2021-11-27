@@ -61,7 +61,7 @@ struct Configuracion
 	uint8_t sensorHeatPin[MAX_TAM_NOMBRE];
 	uint8_t motorCtrlPin[MAX_TAM_NOMBRE];
 	uint8_t frecCaptSamples; //Tiempo total para capturar una muestra (segundos)
-	uint8_t frecCaptSamplesTH; //Tiempo total para capturar una muestra (segundos) - quitar¿?
+	uint8_t frecCaptSamplesTH; //Tiempo total para capturar una muestra (segundos) - quitarï¿½?
 	uint8_t VCC;
 	uint8_t THReadPin[MAX_TAM_NOMBRE];
 	uint8_t subSamplesForSample; //submuestras que componen una muestra

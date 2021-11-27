@@ -20,7 +20,7 @@ void aperturaFichero(const char* nombre, char* data) {
 	}
 
 	//Leemos los datos, y si no hay un salto de linea, lo a�adimos
-	uint8_t leido = fread(&data[0], 1, TOTAL_DATA_READED_FILE, file);
+	uint16_t leido = fread(&data[0], 1, TOTAL_DATA_READED_FILE, file);
 	if ((data[leido - 1] != '\n') && (leido < TOTAL_DATA_READED_FILE - 1)) {
 		data[leido] = '\n';
 		data[leido+1] = 0;
@@ -143,7 +143,7 @@ uint8_t obtenerSecuenciaCapturaDelFicheroOld(FILE* file, uint8_t* modulacion,
 				 }*/
 				break;
 			}
-				//Salto de linea
+			//Salto de linea
 			case VALOR_SALTO_LINEA: {
 				lineaEncontrada = 0;
 				posCab = 0;
@@ -328,7 +328,7 @@ uint8_t obtenerSecuenciaCapturaDelFichero(const char* data,
 				pos_nombre = 0;
 				break;
 			}
-				//Salto de linea
+			//Salto de linea
 			case VALOR_SALTO_LINEA: {
 				lineaEncontrada = 0;
 				posCab = 0;
@@ -357,25 +357,25 @@ uint8_t obtenerSecuenciaCapturaDelFichero(const char* data,
 				break;
 			}
 			case '*':
-			/* El caso de valor infinito que sea solamente 
-			 * para el tiempo de analisis del odorantes */
-			if((posicionLinea == POSICION_DURACION_ODORANTE) &&
-				(data[(*totalDatosLeidos)+1] == ','))
-			{
-				printf("atoi *: %d\n",byte);
-				valor = 0xFF;
-			}
-			else
-			{
-				return E_MAL_FORMADO;
-			}
-			break;
-			/* El caso de valor nulo, que indica que no hay ningun 
+				/* El caso de valor infinito que sea solamente
+				 * para el tiempo de analisis del odorantes */
+				if((posicionLinea == POSICION_DURACION_ODORANTE) &&
+						(data[(*totalDatosLeidos)+1] == ','))
+				{
+					printf("atoi *: %d\n",byte);
+					valor = 0xFF;
+				}
+				else
+				{
+					return E_MAL_FORMADO;
+				}
+				break;
+				/* El caso de valor nulo, que indica que no hay ningun
 			elemento y que se debe de ignorar cuando se ejecute*/
 			case '_':
 				if(((posicionLinea == POSICION_ORDEN_VALVULAS) ||
-					(posicionLinea == POSICION_SUCCION)) &&
-					(data[(*totalDatosLeidos)+1] == ','))
+						(posicionLinea == POSICION_SUCCION)) &&
+						(data[(*totalDatosLeidos)+1] == ','))
 				{
 					printf("atoi _: %d\n",byte);
 					valor = 0xFF;
@@ -386,7 +386,7 @@ uint8_t obtenerSecuenciaCapturaDelFichero(const char* data,
 				{
 					return E_MAL_FORMADO;
 				}
-			break;
+				break;
 			default: {
 				if (posicionLinea == POSICION_ORDEN_VALVULAS) {
 					orden_valvulas[pos_orden_valvulas] = byte;
@@ -433,33 +433,42 @@ uint8_t obtenerSecuenciaCapturaDelFichero(const char* data,
 #endif
 	}
 
-	//Ponemos esto aqui para que procese el ultimo elemento de la linea, sino no lo hace
-	/*Prblema. Si no hay salto de linea, no lo procesa, y lo hay lo procesara dos veces*/
-	if ((posicionLinea == POSICION_RAIZ_NOMBRE_FICHERO)
-			|| (posicionLinea == POSICION_NOMBRE_CARPETA)) {
-		pvalor = (uint32_t *) nombre;
+	/* Si hemos llegado al final de una linea valida*/
+	if(lineaEncontrada == 1)
+	{
+		//Ponemos esto aqui para que procese el ultimo elemento de la linea, sino no lo hace
+		/*Problema. Si no hay salto de linea, no lo procesa, y lo hay lo procesara dos veces*/
+		if ((posicionLinea == POSICION_RAIZ_NOMBRE_FICHERO)
+				|| (posicionLinea == POSICION_NOMBRE_CARPETA)) {
+			pvalor = (uint32_t *) nombre;
 #ifdef DEBUG_GRADO2
-		printf("Valor de nombre y pvalor: %s - %s\n", nombre, (char *) pvalor);
+			printf("Valor de nombre y pvalor: %s - %s\n", nombre, (char *) pvalor);
 #endif
-	} else {
-		pvalor = (uint32_t *) &valor;
+		} else {
+			pvalor = (uint32_t *) &valor;
+		}
+
+		procesarInformacion(pvalor, posicionLinea, captura);
+
+		/*Sumo uno mas para no leer el salto de linea
+		 * la siguiente vez que leamos los datos*/
+		(*totalDatosLeidos)++;
+
+		return SALIDA_OK;
 	}
-
-	procesarInformacion(pvalor, posicionLinea, captura);
-
-	/*Sumo uno mas para no leer el salto de linea
-	 * la siguiente vez que leamos los datos*/
-	(*totalDatosLeidos)++;
+	else
+	{
+		return FIN_FICHERO;
+	}
 
 	/*
 	if (byte == 0) {
 		free(captura);
 		captura = NULL;
 	}
-	*/
+	 */
 
 	//deleteDeepCopyStack(stack);
-	return SALIDA_OK;
 }
 
 uint8_t procesarCadenaAperturaValvulasOld(uint8_t* cadenaApertura,
@@ -927,7 +936,7 @@ uint8_t obtenerSecuenciaConfiguracion(const char* data,
 				posicionLinea++;
 				break;
 			}
-				//Salto de linea
+			//Salto de linea
 			case SEPARADOR_VALVULAS: {
 				ptr_data[pos_read] = 0;
 				ptr_data = &conf->electrovalvulas[posVal][0];
@@ -980,11 +989,19 @@ uint8_t obtenerSecuenciaConfiguracion(const char* data,
 #endif
 	}
 
-	/*Sumo uno mas para no leer el salto de linea
-	 * la siguiente vez que leamos los datos*/
-	(*totalDatosLeidos)++;
-	conf->totalElectrovalvulas = posVal;
-	ptr_data[pos_read] = 0;
+	/* Si no hemos legado al final del archivo, seguimos, sino finalizamos*/
+	if(lineaEncontrada == 1)
+	{
+		/*Sumo uno mas para no leer el salto de linea
+		 * la siguiente vez que leamos los datos*/
+		(*totalDatosLeidos)++;
+		conf->totalElectrovalvulas = posVal;
+		ptr_data[pos_read] = 0;
 
-	return SALIDA_OK;
+		return SALIDA_OK;
+	}
+	else
+	{
+		return FIN_FICHERO;
+	}
 }
