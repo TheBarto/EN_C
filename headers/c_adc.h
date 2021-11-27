@@ -34,6 +34,7 @@ SOFTWARE.
 
 extern int adc_initialized;
 
+BBIO_err initialize_adc(void);
 BBIO_err adc_setup(void);
 BBIO_err read_value(unsigned int ain, float *value);
 BBIO_err adc_cleanup(void);

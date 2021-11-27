@@ -87,7 +87,7 @@ float leer_valor_crudo_ADC(uint8_t* puerto)
 		printf("Primero se debe de inicializar los puertos ADC antes de operar con ellos.\n");
 	}
 
-	if(obtener_numero_ADC((char *)puerto, &valor_puerto) != E_ARG_INVALIDO)
+	if(obtener_numero_ADC((char *)puerto, &valor_puerto) == E_ARG_INVALIDO)
 	{
 		printf("Puerto erroneo.\n");
 	}
