@@ -10,6 +10,7 @@
 
 
 uint8_t error_conf = 0;
+uint8_t configuracion_modulo = 0;
 
 // Tabla con todos los pines de las BB.
 pins_t table[TOTAL_PINES] = {

@@ -45,8 +45,8 @@ typedef uint8_t BBIO_err;
 
 extern uint8_t modulo_GPIO;
 extern uint8_t error_conf;
+extern uint8_t configuracion_modulo;
 
-uint8_t configuracion_modulo;
 uint8_t direccion_GPIO[120];
 char ctrl_dir[CTRL_DIR_MAX];
 char ocp_dir[OCP_DIR_MAX];
