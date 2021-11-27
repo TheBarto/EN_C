@@ -68,7 +68,7 @@ void iniciar_GPIO(const char* canal, uint8_t direccion, uint8_t pull_up_down, ui
 
 	uint16_t gpio = 0;
 	uint8_t pud = PUD_OFF;
-	uint8_t ret = -1;
+	uint8_t ret = OK;
 
 	if(!configuracion_modulo)
 	{
@@ -89,7 +89,7 @@ void iniciar_GPIO(const char* canal, uint8_t direccion, uint8_t pull_up_down, ui
 
 	if((pud != PUD_OFF) && (pud != PUD_DOWN) && (pud != PUD_UP))
 	{
-		printf("Valor inválido para el modo del puerto GPIO. El estado debe ser PUD_UP (ALTO), PUD_DOWN (BAJO) o PUD_OFF (APAGADO).\n");
+		printf("Valor invï¿½lido para el modo del puerto GPIO. El estado debe ser PUD_UP (ALTO), PUD_DOWN (BAJO) o PUD_OFF (APAGADO).\n");
 		return;
 	}
 
@@ -111,7 +111,7 @@ void iniciar_GPIO(const char* canal, uint8_t direccion, uint8_t pull_up_down, ui
 
 	if(gpio_set_direction(gpio, direccion) != 0)
 	{
-		printf("Error al fijar la dirección del GPIO (ENTRADA o SALIDA). Falta un archivo o los permisos son insuficientes.\n");
+		printf("Error al fijar la direcciï¿½n del GPIO (ENTRADA o SALIDA). Falta un archivo o los permisos son insuficientes.\n");
 		return;
 	}
 
