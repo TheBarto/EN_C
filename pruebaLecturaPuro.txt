@@ -1,2 +1,8 @@
+# modulacion, succion, duracionOdorante, ordenElectrovalvulas, 
+# TempSensor, RaizNombreFichero, RutaCarpetaDatos
+
+# Captura "puro" sin succion y sin electrovalvulas (valor _) y con un tiempo
+infinito de analisis de odorantes (valor *). La temperatura del sensor es del 100%,
+el maximo posible, y todos los ficheros comienzan por "captura" y se encuentran en 
+la carpeta "pruebas" del directorio de ejecucion.
 EN_CAPTURE:1,_,*,_,100,captura,pruebas
-EN_CAPTURE:1,32,23,{7-8-9}(2),30,captura3,pruebas3
