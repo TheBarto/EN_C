@@ -358,10 +358,12 @@ void captura_secuencias_completas_puro(struct Captura* captura, struct Configura
 	}
 
 	/* Antes de hacer nada, comprobamos que no se quieran
-	 * abrir mas valvulas de las declaradas*/
-	if(P_CAPT_TOTAL_VALVULAS(captura) > P_CONF_TOTAL_VALS(config))
+	 * abrir mas valvulas de las declaradas, si es que se han
+	 * indicado valvulas para abrir.*/
+	if((P_CAPT_TOTAL_VALVULAS(captura) != 0xFF) &&
+			(P_CAPT_TOTAL_VALVULAS(captura) > P_CONF_TOTAL_VALS(config)))
 	{
-		printf("Se quieren abrir más electrovalvulas de las declaradas\n");
+		printf("Se quieren abrir más electrovalvulas de las declaradas.\n");
 		return;
 	}
 
