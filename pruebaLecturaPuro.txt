@@ -1,2 +1,2 @@
-EN_CAPTURE:1,52,20,{0-1-2}(2),250,captura,pruebas
+EN_CAPTURE:1,_,*,_,100,captura,pruebas
 EN_CAPTURE:1,32,23,{7-8-9}(2),30,captura3,pruebas3
