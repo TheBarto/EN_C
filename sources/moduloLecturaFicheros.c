@@ -916,7 +916,7 @@ uint8_t obtenerSecuenciaConfiguracion(const char* data,
 					ptr_data = &conf->subSamplesForSample;
 					break;
 				case FREC_CAPT_SUB_SAMPLES:
-					ptr_data = &conf->frecCaptSubSamples;
+					ptr_data = &conf->timeCaptSubSamples;
 					break;
 				case N_ELECTROVALVULAS:
 					ptr_data = &conf->electrovalvulas[0][0];

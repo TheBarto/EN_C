@@ -65,7 +65,7 @@ struct Configuracion
 	uint8_t VCC;
 	uint8_t THReadPin[MAX_TAM_NOMBRE];
 	uint8_t subSamplesForSample; //submuestras que componen una muestra
-	uint8_t frecCaptSubSamples; //Tiempo total para capturar las sub muestras que componen la muestra (milisegundos)
+	uint8_t timeCaptSubSamples; //Tiempo total para capturar las sub muestras que componen la muestra (MILISEGUNDOS)
 	uint8_t totalElectrovalvulas;
 	uint8_t electrovalvulas[MAX_ELECTROVALVULAS][MAX_TAM_NOMBRE];
 	uint8_t resistencia; //Ponerla como un uint16_t
@@ -80,8 +80,8 @@ struct Configuracion
 #define P_CONF_FREC_CAPTURA_SAMPLES_TH(x) (x->frecCaptSamplesTH)
 #define P_CONF_VCC(x) (x->VCC)
 #define P_CONF_TH_READ_PIN(x) (x->THReadPin)
-#define P_CONF_SUB_SAMPLES(x) (x->subSamplesForSample)
-#define P_CONF_FREC_SUB_SAMPLES(x) (x->frecCaptSubSamples)
+#define P_CONF_SUB_SAMPLES_FOR_SAMPLE(x) (x->subSamplesForSample)
+#define P_CONF_TIME_CAPT_SUB_SAMPLES(x) (x->timeCaptSubSamples)
 #define P_CONF_TOTAL_VALS(x) (x->totalElectrovalvulas)
 #define P_CONF_ELECTROVALVULAS(x) (x->electrovalvulas)
 #define P_CONF_RESISTENCIA(x) (x->resistencia)

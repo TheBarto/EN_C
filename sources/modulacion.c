@@ -292,13 +292,23 @@ void captura_secuencia_odorantes_completa_puro(void* capt, struct Configuracion*
 {
 	float tempTH = 0;
 	float humTH = 0;
-	float timeUSleep = (P_CONF_FREC_SUB_SAMPLES(config) / P_CONF_SUB_SAMPLES(config));
+	/* El tiempo tiene que estar en microsegundos.
+	 * Por eso multiplico por 1000,
+	 * para pasar de milisegundos a microsegundos. */
+	float timeUSleep = (((float)P_CONF_TIME_CAPT_SUB_SAMPLES(config) / (float)P_CONF_SUB_SAMPLES_FOR_SAMPLE(config))*1000);
 	float value = 0;
 
 	time_t seconds_ini = time(NULL);
 	struct tm* tm_struct = localtime(&seconds_ini);
 
-	for(uint8_t i = 0; i < P_CONF_SUB_SAMPLES(config); i++)
+#ifdef DEBUG_MODE
+	printf("Valor de timeUSleep: %f\n", timeUSleep);
+	printf("Valor de P_CONF_TIME_CAPT_SUB_SAMPLES(config): %f\n", (float)P_CONF_TIME_CAPT_SUB_SAMPLES(config));
+	printf("Valor de P_CONF_SUB_SAMPLES_FOR_SAMPLE(config): %f\n", (float)P_CONF_SUB_SAMPLES_FOR_SAMPLE(config));
+	printf("Valor de P_CONF_FREC_CAPTURA_SAMPLES(config): %d\n", P_CONF_FREC_CAPTURA_SAMPLES(config));
+#endif
+
+	for(uint8_t i = 0; i < P_CONF_SUB_SAMPLES_FOR_SAMPLE(config); i++)
 	{
 #ifdef DEBUG_MODE
 		value = 20.0;
@@ -307,10 +317,14 @@ void captura_secuencia_odorantes_completa_puro(void* capt, struct Configuracion*
 		//ADC.
 		value += (leer_valor_ADC(P_CONF_SENSOR_READ_PIN(config))*1800);
 #endif
+
+#ifdef DEBUG_MODE
+		printf("Voy a dormir: %f microsegundos\n", timeUSleep);
+#endif
 		usleep(timeUSleep);
 	}
 
-	value/=P_CONF_SUB_SAMPLES(config);
+	value/=P_CONF_SUB_SAMPLES_FOR_SAMPLE(config);
 
 	float resistencia_interna=((P_CONF_VCC(config)*P_CONF_RESISTENCIA(config))/(value/1000.))-P_CONF_RESISTENCIA(config);
 
@@ -320,6 +334,10 @@ void captura_secuencia_odorantes_completa_puro(void* capt, struct Configuracion*
 
 	//printf con los datos
 	printf("Datos: %d %.3f %.3f 100 %.3f %.3f %d_%d_%d-%d_%d_%d\n", nMuestra, value, resistencia_interna, tempTH, humTH,
+			(tm_struct->tm_year+1900), (tm_struct->tm_mon+1), tm_struct->tm_mday,
+			tm_struct->tm_hour, tm_struct->tm_min, tm_struct->tm_sec);
+
+	fprintf(file, "Datos: %d %.3f %.3f 100 %.3f %.3f %d_%d_%d-%d_%d_%d\n", nMuestra, value, resistencia_interna, tempTH, humTH,
 			(tm_struct->tm_year+1900), (tm_struct->tm_mon+1), tm_struct->tm_mday,
 			tm_struct->tm_hour, tm_struct->tm_min, tm_struct->tm_sec);
 
@@ -465,6 +483,7 @@ void cierreDescriptoresAbiertos(struct Configuracion* conf, FILE* file)
 	//Si es distinto de NULL liberamos
 	if(file)
 	{
+		fflush(file);
 		fclose(file);
 		file = NULL;
 	}
