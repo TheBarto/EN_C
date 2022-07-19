@@ -231,7 +231,7 @@ uint8_t obtenerSecuenciaCapturaDelFicheroOld(FILE* file, uint8_t* modulacion,
  se lee otra linea para otra secuencia */
 uint8_t obtenerSecuenciaCapturaDelFichero(const char* data,
 		uint16_t* totalDatosLeidos,
-		struct Captura* captura) {
+		EN_config* captura) {
 
 	P_CAPT_TOTAL_VALORES_EXTRA(captura) = 0;
 
@@ -505,8 +505,8 @@ uint8_t procesarCadenaAperturaValvulasOld(uint8_t* cadenaApertura,
 			break;
 
 		case VALOR_APERTURA_PARENTESIS:
-			/*Si encontramos un parentesis, tenemos que guardar el elemento que tenemos leido, siempre
-			 *que no se haya una llave.*/
+			//Si encontramos un parentesis, tenemos que guardar el elemento 
+			//que tenemos leido, siempre que no se haya una llave.
 			if (cierreLlaveCercano == VALOR_NUMERO_LEIDO) {
 				pushDeepCopy(stack, &valor, deepCopyUInt8Value);
 				cierreLlaveCercano = VALOR_RESET_LLAVE_CERRADA;

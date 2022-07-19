@@ -9,8 +9,7 @@ int main(int arc, char* argv[])
 
 	setbuf(stdout, NULL);
 
-	struct Captura captura;
-	struct Configuracion conf;
+	EN_config captura;
 	char data[TOTAL_DATA_READED_FILE];
 	uint16_t totalDatosLeidos = 0;
 
@@ -27,7 +26,7 @@ int main(int arc, char* argv[])
 	uint8_t ret = obtenerSecuenciaCapturaDelFichero(data, &totalDatosLeidos, &captura);
 	while(ret == OK)
 	{
-		captura_secuencias_completas_puro(&captura, &conf);
+		captura_secuencias_completas_puro(&captura);
 		ret = obtenerSecuenciaCapturaDelFichero(data, &totalDatosLeidos, &captura);
 	}
 

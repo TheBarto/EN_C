@@ -73,18 +73,18 @@ struct Configuracion
 	uint8_t sleepTH; //segundos
 };
 
-#define P_CONF_SENSOR_READ_PIN(x) (x->sensorReadPin)
-#define P_CONF_SENSOR_HEAT_PIN(x) (x->sensorHeatPin)
-#define P_CONF_MOTOR_CTRL_PIN(x) (x->motorCtrlPin)
-#define P_CONF_FREC_CAPTURA_SAMPLES(x) (x->frecCaptSamples)
-#define P_CONF_FREC_CAPTURA_SAMPLES_TH(x) (x->frecCaptSamplesTH)
-#define P_CONF_VCC(x) (x->VCC)
-#define P_CONF_TH_READ_PIN(x) (x->THReadPin)
-#define P_CONF_SUB_SAMPLES_FOR_SAMPLE(x) (x->subSamplesForSample)
-#define P_CONF_TIME_CAPT_SUB_SAMPLES(x) (x->timeCaptSubSamples)
-#define P_CONF_TOTAL_VALS(x) (x->totalElectrovalvulas)
-#define P_CONF_ELECTROVALVULAS(x) (x->electrovalvulas)
-#define P_CONF_RESISTENCIA(x) (x->resistencia)
+#define P_CONF_SENSOR_READ_PIN(x) (x->configuracion.sensorReadPin)
+#define P_CONF_SENSOR_HEAT_PIN(x) (x->configuracion.sensorHeatPin)
+#define P_CONF_MOTOR_CTRL_PIN(x) (x->configuracion.motorCtrlPin)
+#define P_CONF_FREC_CAPTURA_SAMPLES(x) (x->configuracion.frecCaptSamples)
+#define P_CONF_FREC_CAPTURA_SAMPLES_TH(x) (x->configuracion.frecCaptSamplesTH)
+#define P_CONF_VCC(x) (x->configuracion.VCC)
+#define P_CONF_TH_READ_PIN(x) (x->configuracion.THReadPin)
+#define P_CONF_SUB_SAMPLES_FOR_SAMPLE(x) (x->configuracion.subSamplesForSample)
+#define P_CONF_TIME_CAPT_SUB_SAMPLES(x) (x->configuracion.timeCaptSubSamples)
+#define P_CONF_TOTAL_VALS(x) (x->configuracion.totalElectrovalvulas)
+#define P_CONF_ELECTROVALVULAS(x) (x->configuracion.electrovalvulas)
+#define P_CONF_RESISTENCIA(x) (x->configuracion.resistencia)
 
 #define INI_CONFIGURACION_STRUCT(pconfiguracion_struct) \
 	NMUESTRASCAPTURA(pconfiguracion_struct) = 10; \
@@ -97,8 +97,8 @@ struct Configuracion
 	PINVOLTAJESENSOR(pconfiguracion_struct) = 0; \
 	PINLECTURASENSOR(pconfiguracion_struct) = 0; \
 
-struct Cofiguracion* OLD_crear_configuracion_defecto();
-void OLD_liberar_elems_struct_configuracion(struct Cofiguracion* config);
+//struct Cofiguracion* OLD_crear_configuracion_defecto();
+//void OLD_liberar_elems_struct_configuracion(struct Cofiguracion* config);
 
 /*
 	La estructura captura hace referencia a una captura completa. A UNA secuencia de odorantes,
@@ -116,34 +116,63 @@ struct Captura
 	uint16_t valoresCapturaExtra[20];
 	uint8_t modulacion; /* 31/07/2021 -> incluimos la modulacion para tener todo junto */
 	uint8_t succion;
-	uint8_t temperaturaSensor;
+	uint8_t temperaturaSensor[2];
 	uint8_t totalValvulas;
 	uint8_t* ordenValvulas;
 	uint8_t path[500];
 	uint8_t fileRoot[500]; 
 	uint8_t totalValoresCapturaExtraAniadidos;
 	funcion_captura funcion;
+	FILE* file;
 };
 
-#define P_CAPT_MODULACION(x) (x->modulacion)
-#define P_CAPT_SUCCION(x) (x->succion)
-#define P_CAPT_TEMPERATURA_SENSOR(x) (x->temperaturaSensor)
-#define P_CAPT_TIEMPO_ANALISIS_ODOR(x) (x->tiempoAnalisisOdor)
-#define P_CAPT_TOTAL_VALVULAS(x) (x->totalValvulas)
-#define P_CAPT_ORDEN_VALVULAS(x) (x->ordenValvulas)
-#define P_CAPT_PATH(x) (x->path)
-#define P_CAPT_FILE_ROOT(x) (x->fileRoot)
-#define P_CAPT_GUARDAR_VALORES_EXTRA(x, y) (x->valoresCapturaExtra[x->totalValoresCapturaExtraAniadidos] = y)
-#define P_CAPT_TOTAL_VALORES_EXTRA(x) (x->totalValoresCapturaExtraAniadidos)
-#define P_CAPT_FUNCION(x)	(x->funcion)
+#define P_CAPT_MODULACION(x) (x->captura.modulacion)
+#define P_CAPT_SUCCION(x) (x->captura.succion)
+#define P_CAPT_TEMPERATURA_SENSOR(x) (x->captura.temperaturaSensor[0])
+#define P_CAPT_TIEMPO_ANALISIS_ODOR(x) (x->captura.tiempoAnalisisOdor)
+#define P_CAPT_TOTAL_VALVULAS(x) (x->captura.totalValvulas)
+#define P_CAPT_ORDEN_VALVULAS(x) (x->captura.ordenValvulas)
+#define P_CAPT_PATH(x) (x->captura.path)
+#define P_CAPT_FILE_ROOT(x) (x->captura.fileRoot)
+#define P_CAPT_GUARDAR_VALORES_EXTRA(x, y) (x->captura.valoresCapturaExtra[x->totalValoresCapturaExtraAniadidos] = y)
+#define P_CAPT_TOTAL_VALORES_EXTRA(x) (x->captura.totalValoresCapturaExtraAniadidos)
+#define P_CAPT_FUNCION(x)	(x->captura.funcion)
+#define P_CAPT_FILE(x)		(x->captura.file)
 
-#define TOTALVALVULAS2(x) (x.totalValvulas)
+#define TOTALVALVULAS2(x) (x->captura.totalValvulas)
 
-void OLD_configurar_struct_configuracion(struct Cofiguracion* sConfiguracion, uint8_t* datosConfiguracion,
-	char** pelectrovalvulas, uint8_t* totalElectrovalvulas);
-struct Captura* OLD_inicializar_structs_capturas(uint16_t* totalMuestras, uint8_t* suctions,
-		uint8_t* temperaturasSensor, int16_t* tiemposAnalisisOdor, uint8_t** ordenValvulas);
-void OLD_liberar_structs_capturas(struct Captura* capturas, uint16_t* totalMuestras);
+/* Nuevo define 02/07/2022 */
+/* Nuevo define para obtener la temperatura minima y maxima */
+#define P_CAPT_TEMPERATURA_SENSOR(x, y)	(x->captura.temperaturaSensor[y])
+#define P_CAPT_VARIACION(x)	(x->captura.temperaturaSensor[1])
+
+typedef struct
+{
+	struct Captura captura;
+	struct Configuracion configuracion;
+}EN_config;
+
+void captura_secuencia_odorantes_completa_puro(EN_config* EN, uint16_t nMuestra);
+void captura_secuencias_completas_puro(EN_config* captura);
+
+void inicializar_fichero_puertos(uint8_t* succion, uint8_t* pinMotor, char* path, FILE* f);
+void cierre(void* structModulacion, uint8_t tipo, FILE* f);
+void abrir_electrovalvulas(char** p_total_electrovalvulas, 
+	uint8_t* p_electrovalvulas_seleccionadas, 
+	uint8_t electrovalvula);
+
+void abrir_electrovalvula(uint8_t p_electrovalvulas[MAX_ELECTROVALVULAS][MAX_TAM_NOMBRE],
+		uint8_t electrovalvula);
+
+void cerrar_electrovalvulas(uint8_t p_electrovalvulas[MAX_ELECTROVALVULAS][MAX_TAM_NOMBRE],
+		uint8_t total_electro);
+
+void cierreDescriptoresAbiertos(EN_config* conf);
+
+void activar_puertos_GPIO(uint8_t** GPIOs, uint8_t* total_GPIOs);
+void captura_muestras_datos(uint8_t* tipo, void* structModulacion);
+
+// 04/07/2022 -> COMENTO PORQUE YA NO LO VOY A UTILIZAR MAS, PARA NO LIARME
 
 /*
 	La estructura Puro hace referencia al total de las multiples secuencias de captura con esta modulacion. 
@@ -152,6 +181,13 @@ void OLD_liberar_structs_capturas(struct Captura* capturas, uint16_t* totalMuest
 */
 
 //typedef void (*funcion_captura)(void*);
+
+/*
+void OLD_configurar_struct_configuracion(struct Cofiguracion* sConfiguracion, uint8_t* datosConfiguracion,
+	char** pelectrovalvulas, uint8_t* totalElectrovalvulas);
+struct Captura* OLD_inicializar_structs_capturas(uint16_t* totalMuestras, uint8_t* suctions,
+		uint8_t* temperaturasSensor, int16_t* tiemposAnalisisOdor, uint8_t** ordenValvulas);
+void OLD_liberar_structs_capturas(struct Captura* capturas, uint16_t* totalMuestras);
 
 struct Puro{
 	struct Cofiguracion* configuracion;
@@ -178,8 +214,6 @@ struct Puro* OLD_inicializar_struct_Puro(uint16_t resistencia, char* path, struc
 struct Puro* OLD_inicializar_struct_Puro_struct(uint16_t resistencia, char* path, struct Cofiguracion* configuracion,
 	uint16_t* totalMuestras, funcion_captura func, struct Captura* captura);
 
-void captura_secuencia_odorantes_completa_puro(void* capt, struct Configuracion* config, FILE* file, uint16_t nMuestra);
-void captura_secuencias_completas_puro(struct Captura* captura, struct Configuracion* config);
 
 void OLD_captura_secuencia_odorantes(struct Captura* captura, struct Cofiguracion* config);
 
@@ -202,22 +236,6 @@ struct Regresion* OLD_inicializar_struct_Regresion(uint16_t resistencia, uint8_t
 	struct Cofiguracion* configuracion);
 
 
-void inicializar_fichero_puertos(uint8_t* succion, uint8_t* pinMotor, char* path, FILE* f);
-void cierre(void* structModulacion, uint8_t tipo, FILE* f);
-void abrir_electrovalvulas(char** p_total_electrovalvulas, 
-	uint8_t* p_electrovalvulas_seleccionadas, 
-	uint8_t electrovalvula);
-
-void abrir_electrovalvula(uint8_t p_electrovalvulas[MAX_ELECTROVALVULAS][MAX_TAM_NOMBRE],
-		uint8_t electrovalvula);
-
-void cerrar_electrovalvulas(uint8_t p_electrovalvulas[MAX_ELECTROVALVULAS][MAX_TAM_NOMBRE],
-		uint8_t total_electro);
-
-void cierreDescriptoresAbiertos(struct Configuracion* conf, FILE* file);
-
-void activar_puertos_GPIO(uint8_t** GPIOs, uint8_t* total_GPIOs);
-void captura_muestras_datos(uint8_t* tipo, void* structModulacion);
-
+*/
 
 #endif

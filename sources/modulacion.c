@@ -288,7 +288,7 @@ void inicializar_fichero_puertos(uint8_t* succion, uint8_t* pinMotor, char* path
 }
 
 /* Para cada captura, obtenemos los datos del sensor */
-void captura_secuencia_odorantes_completa_puro(void* capt, struct Configuracion* config, FILE* file, uint16_t nMuestra)
+void captura_secuencia_odorantes_completa_puro(EN_config* EN, uint16_t nMuestra)
 {
 	float tempTH = 0;
 	float humTH = 0;
@@ -303,19 +303,19 @@ void captura_secuencia_odorantes_completa_puro(void* capt, struct Configuracion*
 
 #ifdef DEBUG_MODE
 	printf("Valor de timeUSleep: %f\n", timeUSleep);
-	printf("Valor de P_CONF_TIME_CAPT_SUB_SAMPLES(config): %f\n", (float)P_CONF_TIME_CAPT_SUB_SAMPLES(config));
-	printf("Valor de P_CONF_SUB_SAMPLES_FOR_SAMPLE(config): %f\n", (float)P_CONF_SUB_SAMPLES_FOR_SAMPLE(config));
-	printf("Valor de P_CONF_FREC_CAPTURA_SAMPLES(config): %d\n", P_CONF_FREC_CAPTURA_SAMPLES(config));
+	printf("Valor de P_CONF_TIME_CAPT_SUB_SAMPLES(config): %f\n", (float)P_CONF_TIME_CAPT_SUB_SAMPLES(EN));
+	printf("Valor de P_CONF_SUB_SAMPLES_FOR_SAMPLE(config): %f\n", (float)P_CONF_SUB_SAMPLES_FOR_SAMPLE(EN));
+	printf("Valor de P_CONF_FREC_CAPTURA_SAMPLES(config): %d\n", P_CONF_FREC_CAPTURA_SAMPLES(EN));
 #endif
 
-	for(uint8_t i = 0; i < P_CONF_SUB_SAMPLES_FOR_SAMPLE(config); i++)
+	for(uint8_t i = 0; i < P_CONF_SUB_SAMPLES_FOR_SAMPLE(EN); i++)
 	{
 #ifdef DEBUG_MODE
 		value = 20.0;
 		//printf("Hacemos una lectura - %f del ADC\n",i);
 #else
 		//ADC.
-		value += (leer_valor_ADC(P_CONF_SENSOR_READ_PIN(config))*1800);
+		value += (leer_valor_ADC(P_CONF_SENSOR_READ_PIN(EN))*1800);
 #endif
 
 #ifdef DEBUG_MODE
@@ -324,9 +324,9 @@ void captura_secuencia_odorantes_completa_puro(void* capt, struct Configuracion*
 		usleep(timeUSleep);
 	}
 
-	value/=P_CONF_SUB_SAMPLES_FOR_SAMPLE(config);
+	value/=P_CONF_SUB_SAMPLES_FOR_SAMPLE(EN);
 
-	float resistencia_interna=((P_CONF_VCC(config)*P_CONF_RESISTENCIA(config))/(value/1000.))-P_CONF_RESISTENCIA(config);
+	float resistencia_interna=((P_CONF_VCC(EN)*P_CONF_RESISTENCIA(EN))/(value/1000.))-P_CONF_RESISTENCIA(EN);
 
 #ifdef DEBUG_MODE
 	printf("Resistencia interna: %f\n",resistencia_interna);
@@ -337,11 +337,11 @@ void captura_secuencia_odorantes_completa_puro(void* capt, struct Configuracion*
 			(tm_struct->tm_year+1900), (tm_struct->tm_mon+1), tm_struct->tm_mday,
 			tm_struct->tm_hour, tm_struct->tm_min, tm_struct->tm_sec);
 
-	fprintf(file, "Datos: %d %.3f %.3f 100 %.3f %.3f %d_%d_%d-%d_%d_%d\n", nMuestra, value, resistencia_interna, tempTH, humTH,
+	fprintf(P_CAPT_FILE(file), "Datos: %d %.3f %.3f 100 %.3f %.3f %d_%d_%d-%d_%d_%d\n", nMuestra, value, resistencia_interna, tempTH, humTH,
 			(tm_struct->tm_year+1900), (tm_struct->tm_mon+1), tm_struct->tm_mday,
 			tm_struct->tm_hour, tm_struct->tm_min, tm_struct->tm_sec);
 
-	sleep(P_CONF_FREC_CAPTURA_SAMPLES(config) - (time(NULL)-seconds_ini));
+	sleep(P_CONF_FREC_CAPTURA_SAMPLES(EN) - (time(NULL)-seconds_ini));
 
 	return;
 }
@@ -350,7 +350,228 @@ void captura_secuencia_odorantes_completa_puro(void* capt, struct Configuracion*
 captura contiene un conjunto de apertura y cierre de valvulas, y tiempos de captura 
 diferentes. */
 /*ESTA ES CORRECTA, FALTA PERFILARLA - CAMBIAR EL NOMBRE TAMBIEN*/
-void captura_secuencias_completas_puro(struct Captura* captura, struct Configuracion* config)
+void captura_secuencias_completas_puro(EN_config* captura)
+{
+
+	uint16_t nMuestras = 0;
+	char nombreFichero[1500];
+
+	time_t tm = time(NULL);
+	struct tm* tm_struct = localtime(&tm);
+
+	sprintf(&nombreFichero[0], "%s/%s-%d_%d_%d-%d_%d_%d.dat%c",P_CAPT_PATH(captura), P_CAPT_FILE_ROOT(captura),
+			tm_struct->tm_year+1900, tm_struct->tm_mon+1, tm_struct->tm_mday, tm_struct->tm_hour,
+			tm_struct->tm_min, tm_struct->tm_sec, 0);
+
+	P_CAPT_FILE(captura) = fopen(nombreFichero, "w");
+
+#ifdef DEBUG_GRADO1
+	printf("nombre fichero:) %s\n", nombreFichero);
+#endif
+
+	if(!file)
+	{
+		printf("Fallo al abrir el fichero %s, finalizamos la ejecucion:)\n", nombreFichero);
+		return;
+	}
+
+	/* Antes de hacer nada, comprobamos que no se quieran
+	 * abrir mas valvulas de las declaradas, si es que se han
+	 * indicado valvulas para abrir.*/
+	if((P_CAPT_TOTAL_VALVULAS(captura) != 0xFF) &&
+			(P_CAPT_TOTAL_VALVULAS(captura) > P_CONF_TOTAL_VALS(captura)))
+	{
+		printf("Se quieren abrir más electrovalvulas de las declaradas.\n");
+		return;
+	}
+
+	/* Con esto inicializamos el puerto PWM del motor*/
+#ifdef DEBUG_MODE
+	if(P_CAPT_SUCCION(captura) != 0xFF)
+		printf("Activo PWM del motor\n");
+	else
+		printf("No activo PWM del motor\n");
+#else
+	//PWM.
+	if(P_CAPT_SUCCION(captura) != 0xFF)
+		iniciar_puerto_PWM((const char *)P_CONF_MOTOR_CTRL_PIN(captura), P_CAPT_SUCCION(captura), FRECUENCIA_DEFECTO, POLARIDAD_DEFECTO);
+#endif
+
+#ifdef DEBUG_MODE
+	printf("Activo PWM de la temperatura del sensor\n");
+#else
+	/* Inicializamos el puerto del sensor */
+	iniciar_puerto_PWM((const char *)P_CONF_SENSOR_HEAT_PIN(captura), P_CAPT_TEMPERATURA_SENSOR(captura), FRECUENCIA_DEFECTO, POLARIDAD_DEFECTO);
+#endif
+
+	int i = 0;
+	//void inicializar_fichero_puertos(uint8_t* succion, uint8_t* pinMotor, char* path, FILE* f)
+	while((i < P_CAPT_TOTAL_VALVULAS(captura)) || 
+		(P_CAPT_TOTAL_VALVULAS(captura) == 0xFF))
+	{
+		/* Si existen electrovalvulas, comprobamos que la que se desee abrir
+		 * exista, y que si hay 3 valvulas (0, 1 y 2) no se quiera abrir la
+		 * numero 8.*/
+		if(P_CAPT_TOTAL_VALVULAS(captura) != 0xFF)
+		{
+			if(P_CAPT_ORDEN_VALVULAS(captura)[i] < P_CONF_TOTAL_VALS(captura))
+			{
+				abrir_electrovalvula(P_CONF_ELECTROVALVULAS(captura), P_CAPT_ORDEN_VALVULAS(captura)[i]);
+			}
+			else
+			{
+				printf("La valvula que quiere abrirse no está declarada.\n");
+				printf("Hay %d valvulas indicadas y se quiere abrir la numero %d\n",
+						P_CONF_TOTAL_VALS(captura), P_CAPT_ORDEN_VALVULAS(captura)[i]);
+				cerrar_electrovalvulas(P_CONF_ELECTROVALVULAS(captura), P_CONF_TOTAL_VALS(captura));
+				return;
+			}
+		}
+
+
+#ifdef DEBUG_GRADO1
+		printf("captura_secuencia_odorantes_completa_puro. TOTALVALVULAS(captura): %d\n",P_CAPT_TOTAL_VALVULAS(captura));
+#endif
+
+		int j = 0;
+		while((j < P_CAPT_TIEMPO_ANALISIS_ODOR(captura)) || 
+			(P_CAPT_TIEMPO_ANALISIS_ODOR(captura) == 0xFF))
+		{
+			P_CAPT_FUNCION(captura)(captura, nMuestras);
+			nMuestras++;
+			j++;
+		}
+
+		if(P_CAPT_TOTAL_VALVULAS(captura) != 0xFF)
+			cerrar_electrovalvulas(P_CONF_ELECTROVALVULAS(captura),
+					P_CONF_TOTAL_VALS(captura));
+
+		i++;
+	}
+
+	cierreDescriptoresAbiertos(captura);
+
+	return;	
+}
+
+/* 02-07-2022 - Nuevo algoritmo captura. Cambios bruscos de temperatura en forma de escalera */
+void captura_secuencias_completas_escalera(EN_config* captura)
+{
+
+	uint16_t nMuestras = 0;
+	char nombreFichero[1500];
+
+	time_t tm = time(NULL);
+	struct tm* tm_struct = localtime(&tm);
+
+	sprintf(&nombreFichero[0], "%s/%s-%d_%d_%d-%d_%d_%d.dat%c",P_CAPT_PATH(captura), P_CAPT_FILE_ROOT(captura),
+			tm_struct->tm_year+1900, tm_struct->tm_mon+1, tm_struct->tm_mday, tm_struct->tm_hour,
+			tm_struct->tm_min, tm_struct->tm_sec, 0);
+
+	P_CAPT_FILE(captura) = fopen(nombreFichero, "w");
+
+#ifdef DEBUG_GRADO1
+	printf("nombre fichero:) %s\n", nombreFichero);
+#endif
+
+	if(!file)
+	{
+		printf("Fallo al abrir el fichero %s, finalizamos la ejecucion:)\n", nombreFichero);
+		return;
+	}
+
+	/* Antes de hacer nada, comprobamos que no se quieran
+	 * abrir mas valvulas de las declaradas, si es que se han
+	 * indicado valvulas para abrir.*/
+	if((P_CAPT_TOTAL_VALVULAS(captura) != 0xFF) &&
+			(P_CAPT_TOTAL_VALVULAS(captura) > P_CONF_TOTAL_VALS(captura)))
+	{
+		printf("Se quieren abrir más electrovalvulas de las declaradas.\n");
+		return;
+	}
+
+	/* Con esto inicializamos el puerto PWM del motor*/
+#ifdef DEBUG_MODE
+	if(P_CAPT_SUCCION(captura) != 0xFF)
+		printf("Activo PWM del motor\n");
+	else
+		printf("No activo PWM del motor\n");
+#else
+	//PWM.
+	if(P_CAPT_SUCCION(captura) != 0xFF)
+		iniciar_puerto_PWM((const char *)P_CONF_MOTOR_CTRL_PIN(captura), P_CAPT_SUCCION(captura), FRECUENCIA_DEFECTO, POLARIDAD_DEFECTO);
+#endif
+
+#ifdef DEBUG_MODE
+	printf("Activo PWM de la temperatura del sensor\n");
+#else
+	/* Inicializamos el puerto del sensor */
+	iniciar_puerto_PWM((const char *)P_CONF_SENSOR_HEAT_PIN(captura), P_CAPT_TEMPERATURA_SENSOR(captura), FRECUENCIA_DEFECTO, POLARIDAD_DEFECTO);
+#endif
+
+	int i = 0;
+	//void inicializar_fichero_puertos(uint8_t* succion, uint8_t* pinMotor, char* path, FILE* f)
+	while((i < P_CAPT_TOTAL_VALVULAS(captura)) || 
+		(P_CAPT_TOTAL_VALVULAS(captura) == 0xFF))
+	{
+		/* Si existen electrovalvulas, comprobamos que la que se desee abrir
+		 * exista, y que si hay 3 valvulas (0, 1 y 2) no se quiera abrir la
+		 * numero 8.*/
+		if(P_CAPT_TOTAL_VALVULAS(captura) != 0xFF)
+		{
+			if(P_CAPT_ORDEN_VALVULAS(captura)[i] < P_CONF_TOTAL_VALS(captura))
+			{
+				abrir_electrovalvula(P_CONF_ELECTROVALVULAS(captura), P_CAPT_ORDEN_VALVULAS(captura)[i]);
+			}
+			else
+			{
+				printf("La valvula que quiere abrirse no está declarada.\n");
+				printf("Hay %d valvulas indicadas y se quiere abrir la numero %d\n",
+						P_CONF_TOTAL_VALS(captura), P_CAPT_ORDEN_VALVULAS(captura)[i]);
+				cerrar_electrovalvulas(P_CONF_ELECTROVALVULAS(captura), P_CONF_TOTAL_VALS(captura));
+				return;
+			}
+		}
+
+
+#ifdef DEBUG_GRADO1
+		printf("captura_secuencia_odorantes_completa_puro. TOTALVALVULAS(captura): %d\n",P_CAPT_TOTAL_VALVULAS(captura));
+#endif
+
+		int j = 0;
+		uint8_t pos = 0;
+		while((j < P_CAPT_TIEMPO_ANALISIS_ODOR(captura)) || 
+			(P_CAPT_TIEMPO_ANALISIS_ODOR(captura) == 0xFF))
+		{
+			if((j%P_CAPT_CAMBIO_TEMP(captura)) == 0)
+			{
+#ifdef DEBUG_MODE
+				iniciar_puerto_PWM((const char *)P_CONF_SENSOR_HEAT_PIN(config), P_CAPT_TEMPERATURA_SENSOR(captura, pos), FRECUENCIA_DEFECTO, POLARIDAD_DEFECTO);
+#else
+				printf("Cambiamos la temperatura a %d\n", P_CAPT_TEMPERATURA_SENSOR(captura, pos));
+#endif
+				pos^=1;
+			}
+			P_CAPT_FUNCION(captura)(captura, nMuestras);
+			nMuestras++;
+			j++;
+		}
+
+		if(P_CAPT_TOTAL_VALVULAS(captura) != 0xFF)
+			cerrar_electrovalvulas(P_CONF_ELECTROVALVULAS(captura),
+					P_CONF_TOTAL_VALS(captura));
+
+		i++;
+	}
+
+	cierreDescriptoresAbiertos(captura);
+
+	return;	
+}
+
+/* 02-07-2022 - Nuevo algoritmo captura. Cambios bruscos de temperatura en forma de escalera.
+ * Variante 2. CAMBIAR NOMBRE A OTRO MEJOR*/
+void captura_secuencias_completas_escalera_var2(EN_config* captura)
 {
 
 	uint16_t nMuestras = 0;
@@ -379,7 +600,7 @@ void captura_secuencias_completas_puro(struct Captura* captura, struct Configura
 	 * abrir mas valvulas de las declaradas, si es que se han
 	 * indicado valvulas para abrir.*/
 	if((P_CAPT_TOTAL_VALVULAS(captura) != 0xFF) &&
-			(P_CAPT_TOTAL_VALVULAS(captura) > P_CONF_TOTAL_VALS(config)))
+			(P_CAPT_TOTAL_VALVULAS(captura) > P_CONF_TOTAL_VALS(captura)))
 	{
 		printf("Se quieren abrir más electrovalvulas de las declaradas.\n");
 		return;
@@ -394,15 +615,16 @@ void captura_secuencias_completas_puro(struct Captura* captura, struct Configura
 #else
 	//PWM.
 	if(P_CAPT_SUCCION(captura) != 0xFF)
-		iniciar_puerto_PWM((const char *)P_CONF_MOTOR_CTRL_PIN(config), P_CAPT_SUCCION(captura), FRECUENCIA_DEFECTO, POLARIDAD_DEFECTO);
+		iniciar_puerto_PWM((const char *)P_CONF_MOTOR_CTRL_PIN(captura), P_CAPT_SUCCION(captura), FRECUENCIA_DEFECTO, POLARIDAD_DEFECTO);
 #endif
 
 #ifdef DEBUG_MODE
 	printf("Activo PWM de la temperatura del sensor\n");
 #else
 	/* Inicializamos el puerto del sensor */
-	iniciar_puerto_PWM((const char *)P_CONF_SENSOR_HEAT_PIN(config), P_CAPT_TEMPERATURA_SENSOR(captura), FRECUENCIA_DEFECTO, POLARIDAD_DEFECTO);
+	iniciar_puerto_PWM((const char *)P_CONF_SENSOR_HEAT_PIN(captura), P_CAPT_TEMPERATURA_SENSOR(captura), FRECUENCIA_DEFECTO, POLARIDAD_DEFECTO);
 #endif
+	uint8_t temp = P_CAPT_TEMPERATURA_SENSOR(captura);
 
 	int i = 0;
 	//void inicializar_fichero_puertos(uint8_t* succion, uint8_t* pinMotor, char* path, FILE* f)
@@ -414,16 +636,16 @@ void captura_secuencias_completas_puro(struct Captura* captura, struct Configura
 		 * numero 8.*/
 		if(P_CAPT_TOTAL_VALVULAS(captura) != 0xFF)
 		{
-			if(P_CAPT_ORDEN_VALVULAS(captura)[i] < P_CONF_TOTAL_VALS(config))
+			if(P_CAPT_ORDEN_VALVULAS(captura)[i] < P_CONF_TOTAL_VALS(captura))
 			{
-				abrir_electrovalvula(P_CONF_ELECTROVALVULAS(config), P_CAPT_ORDEN_VALVULAS(captura)[i]);
+				abrir_electrovalvula(P_CONF_ELECTROVALVULAS(captura), P_CAPT_ORDEN_VALVULAS(captura)[i]);
 			}
 			else
 			{
 				printf("La valvula que quiere abrirse no está declarada.\n");
 				printf("Hay %d valvulas indicadas y se quiere abrir la numero %d\n",
-						P_CONF_TOTAL_VALS(config), P_CAPT_ORDEN_VALVULAS(captura)[i]);
-				cerrar_electrovalvulas(P_CONF_ELECTROVALVULAS(config), P_CONF_TOTAL_VALS(config));
+						P_CONF_TOTAL_VALS(captura), P_CAPT_ORDEN_VALVULAS(captura)[i]);
+				cerrar_electrovalvulas(P_CONF_ELECTROVALVULAS(captura), P_CONF_TOTAL_VALS(captura));
 				return;
 			}
 		}
@@ -434,22 +656,180 @@ void captura_secuencias_completas_puro(struct Captura* captura, struct Configura
 #endif
 
 		int j = 0;
+		int8_t variacion = P_CAPT_VARIACION(captura)
 		while((j < P_CAPT_TIEMPO_ANALISIS_ODOR(captura)) || 
 			(P_CAPT_TIEMPO_ANALISIS_ODOR(captura) == 0xFF))
 		{
-			P_CAPT_FUNCION(captura)(captura, config, file, nMuestras);
+			if(((j%P_CAPT_CAMBIO_TEMP(captura)) == 0) && (j > 0))
+			{
+				temp+=variacion;
+				if(temp >= 100)
+				{
+					temp=100;
+					variacion*=-1;
+				}
+				else if(temp <= 0)
+				{
+					temp=0;
+					variacion*=-1;
+				}
+#ifdef DEBUG_MODE
+				iniciar_puerto_PWM((const char *)P_CONF_SENSOR_HEAT_PIN(captura), temp, FRECUENCIA_DEFECTO, POLARIDAD_DEFECTO);
+#else
+				printf("Cambiamos la temperatura a %d\n", temp);
+#endif
+				pos^=1;
+			}
+			P_CAPT_FUNCION(captura)(captura, nMuestras);
 			nMuestras++;
 			j++;
 		}
 
 		if(P_CAPT_TOTAL_VALVULAS(captura) != 0xFF)
-			cerrar_electrovalvulas(P_CONF_ELECTROVALVULAS(config),
-					P_CONF_TOTAL_VALS(config));
+			cerrar_electrovalvulas(P_CONF_ELECTROVALVULAS(captura),
+					P_CONF_TOTAL_VALS(captura));
 
 		i++;
 	}
 
-	cierreDescriptoresAbiertos(config, file);
+	cierreDescriptoresAbiertos(captura);
+
+	return;	
+}
+
+/* 02-07-2022 - Nuevo algoritmo captura. Cambios bruscos de temperatura en forma de escalera.
+ * Variante 3. CAMBIAR NOMBRE A OTRO MEJOR*/
+void captura_secuencias_completas_escalera_var3(EN_config* captura)
+{
+
+	uint16_t nMuestras = 0;
+	char nombreFichero[1500];
+
+	time_t tm = time(NULL);
+	struct tm* tm_struct = localtime(&tm);
+
+	sprintf(&nombreFichero[0], "%s/%s-%d_%d_%d-%d_%d_%d.dat%c",P_CAPT_PATH(captura), P_CAPT_FILE_ROOT(captura),
+			tm_struct->tm_year+1900, tm_struct->tm_mon+1, tm_struct->tm_mday, tm_struct->tm_hour,
+			tm_struct->tm_min, tm_struct->tm_sec, 0);
+
+	FILE* file = fopen(nombreFichero, "w");
+
+#ifdef DEBUG_GRADO1
+	printf("nombre fichero:) %s\n", nombreFichero);
+#endif
+
+	if(!file)
+	{
+		printf("Fallo al abrir el fichero %s, finalizamos la ejecucion:)\n", nombreFichero);
+		return;
+	}
+
+	/* Antes de hacer nada, comprobamos que no se quieran
+	 * abrir mas valvulas de las declaradas, si es que se han
+	 * indicado valvulas para abrir.*/
+	if((P_CAPT_TOTAL_VALVULAS(captura) != 0xFF) &&
+			(P_CAPT_TOTAL_VALVULAS(captura) > P_CONF_TOTAL_VALS(captura)))
+	{
+		printf("Se quieren abrir más electrovalvulas de las declaradas.\n");
+		return;
+	}
+
+	/* Con esto inicializamos el puerto PWM del motor*/
+#ifdef DEBUG_MODE
+	if(P_CAPT_SUCCION(captura) != 0xFF)
+		printf("Activo PWM del motor\n");
+	else
+		printf("No activo PWM del motor\n");
+#else
+	//PWM.
+	if(P_CAPT_SUCCION(captura) != 0xFF)
+		iniciar_puerto_PWM((const char *)P_CONF_MOTOR_CTRL_PIN(captura), P_CAPT_SUCCION(captura), FRECUENCIA_DEFECTO, POLARIDAD_DEFECTO);
+#endif
+
+#ifdef DEBUG_MODE
+	printf("Activo PWM de la temperatura del sensor\n");
+#else
+	/* Inicializamos el puerto del sensor */
+	iniciar_puerto_PWM((const char *)P_CONF_SENSOR_HEAT_PIN(captura), P_CAPT_TEMPERATURA_SENSOR(captura), FRECUENCIA_DEFECTO, POLARIDAD_DEFECTO);
+#endif
+	uint8_t tempIni = P_CAPT_TEMPERATURA_SENSOR(captura);
+
+	int i = 0;
+	//void inicializar_fichero_puertos(uint8_t* succion, uint8_t* pinMotor, char* path, FILE* f)
+	while((i < P_CAPT_TOTAL_VALVULAS(captura)) || 
+		(P_CAPT_TOTAL_VALVULAS(captura) == 0xFF))
+	{
+		/* Si existen electrovalvulas, comprobamos que la que se desee abrir
+		 * exista, y que si hay 3 valvulas (0, 1 y 2) no se quiera abrir la
+		 * numero 8.*/
+		if(P_CAPT_TOTAL_VALVULAS(captura) != 0xFF)
+		{
+			if(P_CAPT_ORDEN_VALVULAS(captura)[i] < P_CONF_TOTAL_VALS(captura))
+			{
+				abrir_electrovalvula(P_CONF_ELECTROVALVULAS(captura), P_CAPT_ORDEN_VALVULAS(captura)[i]);
+			}
+			else
+			{
+				printf("La valvula que quiere abrirse no está declarada.\n");
+				printf("Hay %d valvulas indicadas y se quiere abrir la numero %d\n",
+						P_CONF_TOTAL_VALS(config), P_CAPT_ORDEN_VALVULAS(captura)[i]);
+				cerrar_electrovalvulas(P_CONF_ELECTROVALVULAS(captura), P_CONF_TOTAL_VALS(captura));
+				return;
+			}
+		}
+
+
+#ifdef DEBUG_GRADO1
+		printf("captura_secuencia_odorantes_completa_puro. TOTALVALVULAS(captura): %d\n",P_CAPT_TOTAL_VALVULAS(captura));
+#endif
+
+		int j = 0;
+		int8_t variacion = P_CAPT_VARIACION(captura)
+		uint8_t estadoTemp = 1;
+		while((j < P_CAPT_TIEMPO_ANALISIS_ODOR(captura)) || 
+			(P_CAPT_TIEMPO_ANALISIS_ODOR(captura) == 0xFF))
+		{
+			if(((j%P_CAPT_CAMBIO_TEMP(captura)) == 0) && (j > 0))
+			{
+			if(estadoTemp == 1)
+			{
+				temp+=variacion;
+				if(temp >= 100)
+				{
+					temp=100;
+					variacion*=-1;
+				}
+				else if(temp <= 0)
+				{
+					temp=0;
+					variacion*=-1;
+				}
+				estadoTemp = 0;
+			}
+			else
+			{
+				temp = tempIni;
+				estadoTemp = 1;
+			}
+#ifdef DEBUG_MODE
+				iniciar_puerto_PWM((const char *)P_CONF_SENSOR_HEAT_PIN(captura), temp, FRECUENCIA_DEFECTO, POLARIDAD_DEFECTO);
+#else
+				printf("Cambiamos la temperatura a %d\n", temp);
+#endif
+			}
+			P_CAPT_FUNCION(captura)(captura, file, nMuestras);
+			nMuestras++;
+			j++;
+		}
+
+		if(P_CAPT_TOTAL_VALVULAS(captura) != 0xFF)
+			cerrar_electrovalvulas(P_CONF_ELECTROVALVULAS(captura),
+					P_CONF_TOTAL_VALS(captura));
+
+		i++;
+	}
+
+	cierreDescriptoresAbiertos(captura);
 
 	return;	
 }
@@ -477,9 +857,10 @@ void OLD_captura_secuencia_odorantes(struct Captura* captura, struct Cofiguracio
 	return;
 }
 
-void cierreDescriptoresAbiertos(struct Configuracion* conf, FILE* file)
+void cierreDescriptoresAbiertos(EN_config* conf)
 {
-
+	FILE* file = P_CAPT_FILE(conf);
+	
 	//Si es distinto de NULL liberamos
 	if(file)
 	{
